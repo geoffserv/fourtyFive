@@ -290,13 +290,6 @@ class fourtyFive:
 		# If we've reached this point, we've escaped the run: loop.  Quittin' time.
 		pygame.quit()
 
-def test_fourtyFive_healthCheck_topLevel():
-	# pytest assertion
-	fourtyFiveTestObj = None
-	fourtyFiveTestObj = fourtyFive(initGfx=False)
-	# Top level healthcheck - everything initialized and there is at least 1 control surface
-	assert len(fourtyFiveTestObj.controlSurfaces) > 0
-
 if __name__ == "__main__":
 	fourtyFive = fourtyFive()
 	fourtyFive.run()
