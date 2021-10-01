@@ -182,7 +182,7 @@ class ffWheel(controlSystem):
 			self.drawPolygon(polygon)
 
 class fourtyFive:
-	def __init__(self, canvasWidth=1920, canvasHeight=1080):
+	def __init__(self, canvasWidth=1920, canvasHeight=1080, initGfx=True):
 
 		# Musical attributes
 		self.notes = [
@@ -218,12 +218,12 @@ class fourtyFive:
 
 		# Initialize the canvas
 		pygame.init()
-		self.canvas = pygame.display.set_mode([self.canvasWidth, self.canvasHeight])
-		pygame.display.set_caption('fourtyFive')  # Set the window title for fun
 
-		self.centerX = self.canvas.get_rect().centerx
-		self.centerY = self.canvas.get_rect().centery
-		self.bottom  = self.canvas.get_rect().bottom
+		if (initGfx):
+			# If this is being run headless, turn initGfx to False
+			# This is useful for headless CI testing
+			self.canvas = pygame.display.set_mode([self.canvasWidth, self.canvasHeight])
+			pygame.display.set_caption('fourtyFive')  # Set the window title for fun
 
 		# fonts = pygame.font.get_fonts()
 		# print(len(fonts))
@@ -293,7 +293,7 @@ class fourtyFive:
 def test_fourtyFive_healthCheck_topLevel():
 	# pytest assertion
 	fourtyFiveTestObj = None
-	fourtyFiveTestObj = fourtyFive()
+	fourtyFiveTestObj = fourtyFive(initGfx=False)
 	# Top level healthcheck - everything initialized and there is at least 1 control surface
 	assert len(fourtyFiveTestObj.controlSurfaces) > 0
 
