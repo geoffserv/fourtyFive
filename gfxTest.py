@@ -11,14 +11,17 @@ from pygame.locals import *
 
 
 class ShapeWheel(object):
-    def __init__(self, canvas_size, r, slice_no=1, offset_degrees=0, canvas_margin=10, label_list=None):
+    def __init__(self, canvas_size, r, slice_no=1, offset_degrees=0,
+                 canvas_margin=10, label_list=None):
         self.slice_no = int(slice_no)
         self.r = int(r)
         self.circle_divisions = 12  # 12-slices around the circle
         self.offset_degrees = int(offset_degrees)
         self.canvas_margin = int(canvas_margin)
-        self.origin_x = int((canvas_size / 2) + self.canvas_margin)  # Center of the canvas X
-        self.origin_y = int((canvas_size / 2) + self.canvas_margin)  # Center of the canvas Y
+        self.origin_x = int(
+            (canvas_size / 2) + self.canvas_margin)  # Center of the canvas X
+        self.origin_y = int(
+            (canvas_size / 2) + self.canvas_margin)  # Center of the canvas Y
         self.canvas_width = (canvas_size + (self.canvas_margin * 2))
         self.canvas_height = (canvas_size + (self.canvas_margin * 2))
         self.label_list = label_list
@@ -28,13 +31,18 @@ class ShapeWheel(object):
 
     def find_coordinates(self):
         for i in range(12):
-            self.coordinates.append(  # One corner of the triangle along the circle radius r, at sliceNo*1/12circle
+            self.coordinates.append(
+                # One corner of the triangle along the circle radius r,
+                # at sliceNo*1/12circle
                 (
                     (
                             self.origin_x +
                             int(self.r * math.sin(
                                 math.radians(
-                                    ((360 / self.circle_divisions) * i) + self.offset_degrees
+                                    ((
+                                                 360 /
+                                                 self.circle_divisions) * i)
+                                    + self.offset_degrees
                                 )
                             )
                                 )
@@ -43,7 +51,10 @@ class ShapeWheel(object):
                             self.origin_y +
                             int(self.r * math.cos(
                                 math.radians(
-                                    ((360 / self.circle_divisions) * i) + self.offset_degrees
+                                    ((
+                                                 360 /
+                                                 self.circle_divisions) * i)
+                                    + self.offset_degrees
                                 )
                             )
                                 )
@@ -52,7 +63,7 @@ class ShapeWheel(object):
             )
 
 
-class ShapeWheelTriangleSlice(ShapeWheel):
+class ShapeWheelSlice(ShapeWheel):
     def find_coordinates(self):
         self.coordinates.append(  # Origin
             (
@@ -60,13 +71,17 @@ class ShapeWheelTriangleSlice(ShapeWheel):
                 self.origin_y
             )
         )
-        self.coordinates.append(  # One corner of the triangle along the circle radius r, at sliceNo*1/12circle
+        self.coordinates.append(
+            # One corner of the triangle along the circle radius r,
+            # at sliceNo*1/12circle
             (
                 (
                         self.origin_x +
                         int(self.r * math.sin(
                             math.radians(
-                                ((360 / self.circle_divisions) * self.slice_no) + self.offset_degrees
+                                ((
+                                             360 / self.circle_divisions) *
+                                 self.slice_no) + self.offset_degrees
                             )
                         )
                             )
@@ -75,20 +90,26 @@ class ShapeWheelTriangleSlice(ShapeWheel):
                         self.origin_y +
                         int(self.r * math.cos(
                             math.radians(
-                                ((360 / self.circle_divisions) * self.slice_no) + self.offset_degrees
+                                ((
+                                             360 / self.circle_divisions) *
+                                 self.slice_no) + self.offset_degrees
                             )
                         )
                             )
                 )
             )
         )
-        self.coordinates.append(  # One corner of the triangle along the circle radius r, at (sliceNo+1)*1/12circle
+        self.coordinates.append(
+            # One corner of the triangle along the circle radius r,
+            # at (sliceNo+1)*1/12circle
             (
                 (
                         self.origin_x +
                         int(self.r * math.sin(
                             math.radians(
-                                ((360 / self.circle_divisions) * (self.slice_no + 1)) + self.offset_degrees
+                                ((360 / self.circle_divisions) * (
+                                            self.slice_no + 1)) +
+                                self.offset_degrees
                             )
                         )
                             )
@@ -97,7 +118,9 @@ class ShapeWheelTriangleSlice(ShapeWheel):
                         self.origin_y +
                         int(self.r * math.cos(
                             math.radians(
-                                ((360 / self.circle_divisions) * (self.slice_no + 1)) + self.offset_degrees
+                                ((360 / self.circle_divisions) * (
+                                            self.slice_no + 1)) +
+                                self.offset_degrees
                             )
                         )
                             )
@@ -107,19 +130,24 @@ class ShapeWheelTriangleSlice(ShapeWheel):
 
 
 class ControlSystem(object):
-    def __init__(self, canvas_width, canvas_height, canvas_margin, color, bg_color, notes, blit_x, blit_y, font_medium):
+    def __init__(self, canvas_width, canvas_height, canvas_margin, color,
+                 bg_color, notes, blit_x, blit_y, font_medium):
         self.surface = None
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
         self.canvas_margin = canvas_margin
         self.color = color
         self.bg_color = bg_color
-        self.notes = notes  # Holds the dict/lists representing the scale notes, their positions and values, etc
-        self.blit_x = blit_x  # The X location in which this entire control should be blit to the screen canvas
-        self.blit_y = blit_y  # The Y location in which this entire control should be blit to the screen canvas
+        self.notes = notes  # Holds the dict/lists representing the scale
+        # notes, their positions and values, etc
+        self.blit_x = blit_x  # The X location in which this entire control
+        # should be blit to the screen canvas
+        self.blit_y = blit_y  # The Y location in which this entire control
+        # should be blit to the screen canvas
         self.font_medium = font_medium  # Medium sized font
-        self.surface = pygame.Surface((int(self.canvas_width + (self.canvas_margin * 2)),
-                                       int(self.canvas_height + (self.canvas_margin * 2))))
+        self.surface = pygame.Surface(
+            (int(self.canvas_width + (self.canvas_margin * 2)),
+             int(self.canvas_height + (self.canvas_margin * 2))))
 
     def init_surface(self):
         pass
@@ -130,11 +158,13 @@ class ControlSystem(object):
     def draw_label_list(self, shape, labels):
         coord_pair = 0
         for coordinates in shape.coordinates:
-            text = self.font_medium.render(labels[coord_pair]['noteName'], False, self.color)
+            text = self.font_medium.render(labels[coord_pair]['noteName'],
+                                           False, self.color)
             text_x_center = int(text.get_width() / 2)
             text_y_center = int(text.get_height() / 2)
             # Bit on to the surface:
-            self.surface.blit(text, [coordinates[0] - text_x_center, coordinates[1] - text_y_center])
+            self.surface.blit(text, [coordinates[0] - text_x_center,
+                                     coordinates[1] - text_y_center])
             coord_pair += 1
 
     def draw_control(self):
@@ -154,13 +184,14 @@ class WheelControl(ControlSystem):
         self.rotate_iterator = 0
         self.offset_degrees = int(360 / 24)
 
-    def init_surface(self):
-        # WheelControl-specific instance attributes
-        setattr(self, "r", int(self.canvas_height / 2))
-        setattr(self, "rotate_offset", 0)
-        setattr(self, "rotate_steps", 0)
-        setattr(self, "rotate_iterator", 0)
-        setattr(self, "offset_degrees", int(360 / 24))  # Control offset degrees
+    # def init_surface(self):
+    #     # WheelControl-specific instance attributes
+    #     setattr(self, "r", int(self.canvas_height / 2))
+    #     setattr(self, "rotate_offset", 0)
+    #     setattr(self, "rotate_steps", 0)
+    #     setattr(self, "rotate_iterator", 0)
+    #     setattr(self, "offset_degrees",
+    #             int(360 / 24))  # Control offset degrees
 
     def update_control(self, events):
         for event in events:
@@ -188,11 +219,12 @@ class WheelControl(ControlSystem):
 
         # Draw the slices
         for i in range(1):
-            polygon = ShapeWheelTriangleSlice(canvas_size=self.r * 2,
-                                              r=self.r,
-                                              slice_no=i,
-                                              offset_degrees=self.offset_degrees + self.rotate_offset,
-                                              canvas_margin=self.canvas_margin)
+            polygon = ShapeWheelSlice(canvas_size=self.r * 2,
+                                      r=self.r,
+                                      slice_no=i,
+                                      offset_degrees=self.offset_degrees +
+                                      self.rotate_offset,
+                                      canvas_margin=self.canvas_margin)
             self.draw_polygon(polygon)
 
 
@@ -221,7 +253,8 @@ class Helm:
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
 
-        self.r = int((canvas_height * .8) / 2)  # R is half of __% of the screen
+        self.r = int(
+            (canvas_height * .8) / 2)  # R is half of __% of the screen
         self.canvas_margin = 10
 
         # Define some colors for convenience and readability
@@ -238,7 +271,8 @@ class Helm:
         if init_gfx:
             # If this is being run headless, turn initGfx to False
             # This is useful for headless CI testing
-            self.canvas = pygame.display.set_mode([self.canvas_width, self.canvas_height])
+            self.canvas = pygame.display.set_mode(
+                [self.canvas_width, self.canvas_height])
             pygame.display.set_caption('helm')  # Set the window title for fun
 
         # fonts = pygame.font.get_fonts()
@@ -247,25 +281,35 @@ class Helm:
         # 	print(f)
 
         # Fonts - very slow
-        # Initialize a font.  This takes forever, like maybe 8 seconds.  But happens once.
+        # Initialize a font.  This takes forever, like maybe 8 seconds.  But
+        # happens once.
         self.fontMed = pygame.font.SysFont('courier', 32)
 
-        # controlSurfaces list contains each controlSystem object that is rendered.
-        # Declare controlSystem objects, set them up and init them, then append() them
-        # to this list.  Then each in turn will get a drawControl() call and their
+        # controlSurfaces list contains each controlSystem object that is
+        # rendered.
+        # Declare controlSystem objects, set them up and init them,
+        # then append() them
+        # to this list.  Then each in turn will get a drawControl() call and
+        # their
         # surface attribute will be blit to the canvas.
         self.controlSurfaces = []
 
         # The size of the ffWheel's surface will be __% of the screen
         control_ff_wheel_size = int(self.canvas_height * 0.8)
         # Create a ffWheel control.  Init.
-        control_ff_wheel = WheelControl(control_ff_wheel_size, control_ff_wheel_size,  # Size of this control's surface.
+        control_ff_wheel = WheelControl(control_ff_wheel_size,
+                                        control_ff_wheel_size,
+                                        # Size of this control's surface.
                                         self.canvas_margin,  # render margin
-                                        self.orange, self.black,  # fg color and bg color
+                                        self.orange, self.black,
+                                        # fg color and bg color
                                         self.notes,  # list of note values
-                                        int((self.canvas_width / 2) - (control_ff_wheel_size / 2)), 0,  # Blit location
+                                        int((self.canvas_width / 2) - (
+                                                    control_ff_wheel_size /
+                                                    2)),
+                                        0,  # Blit location
                                         self.fontMed)
-        control_ff_wheel.init_surface()
+        # control_ff_wheel.init_surface()
         # Rotate 360?
         # control_ff_wheel.rotateSteps = 360
         # control_ff_wheel.rotateIterator = -1
@@ -283,18 +327,24 @@ class Helm:
             # First, draw the screen:
             # Loop through each controlSystem added to the controlSurfaces list
             for controlSurface in self.controlSurfaces:
-                # The drawControl method should update the control's visual elements and
+                # The drawControl method should update the control's visual
+                # elements and
                 # draw to the control's surface
                 controlSurface.draw_control()
                 # Blit the control's surface to the canvas
-                self.canvas.blit(controlSurface.surface, [controlSurface.blit_x, controlSurface.blit_y])
+                self.canvas.blit(controlSurface.surface,
+                                 [controlSurface.blit_x,
+                                  controlSurface.blit_y])
             pygame.display.update()
 
-            # Next, Update controls and everything in preparation for the next loop through:
-            events = {}  # Record events seen during this execution here.  Key is a label, usually pygame event
-            # The controlSurfaces themselves should know what to look for and what to do.
+            # Next, Update controls and everything in preparation for the
+            # next loop through:
+            events = {}  # Record events seen during this execution here.
+            # Key is a label, usually pygame event
+            # The controlSurfaces themselves should know what to look for
+            # and what to do.
             for event in pygame.event.get():
-                if event.type == QUIT:  # If the window 'close' button is clicked...
+                if event.type == QUIT:  # If the window 'close' button...
                     self.running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_a:
@@ -302,7 +352,8 @@ class Helm:
                     if event.key == pygame.K_d:
                         events["K_d"] = True
             for controlSurface in self.controlSurfaces:
-                controlSurface.update_control(events)  # update control attributes based on what needs to happen
+                controlSurface.update_control(
+                    events)  # update control attributes
 
             self.clock.tick(60)  # 60 fps
 
