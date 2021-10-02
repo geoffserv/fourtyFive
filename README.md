@@ -1,10 +1,10 @@
-# fourtyFive
+# helm
 Fourths to the left, Fifths to the right.
 
 
-[![fourtyFive](https://github.com/geoffserv/fourtyFive/actions/workflows/push_pr.yml/badge.svg?branch=master&event=push)](https://github.com/geoffserv/fourtyFive/actions/workflows/push_pr.yml) latest push to `master`.
+[![helm](https://github.com/geoffserv/helm/actions/workflows/push_pr.yml/badge.svg?branch=master&event=push)](https://github.com/geoffserv/helm/actions/workflows/push_pr.yml) latest push to `master`.
 
-[![fourtyFive](https://github.com/geoffserv/fourtyFive/actions/workflows/push_pr.yml/badge.svg?branch=master&event=pull_request)](https://github.com/geoffserv/fourtyFive/actions/workflows/push_pr.yml) latest PR to `master`.
+[![helm](https://github.com/geoffserv/helm/actions/workflows/push_pr.yml/badge.svg?branch=master&event=pull_request)](https://github.com/geoffserv/helm/actions/workflows/push_pr.yml) latest PR to `master`.
 
 ## Goal
 
