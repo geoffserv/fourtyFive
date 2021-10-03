@@ -5,7 +5,6 @@
 # using pygame as the canvas https://www.pygame.org/docs/
 
 import math
-
 import pygame
 from pygame.locals import *
 
@@ -36,28 +35,22 @@ class ShapeWheel(object):
                 # at sliceNo*1/12circle
                 (
                     (
-                            self.origin_x +
-                            int(self.r * math.sin(
-                                math.radians(
-                                    ((
-                                                 360 /
-                                                 self.circle_divisions) * i)
-                                    + self.offset_degrees
-                                )
+                        self.origin_x -
+                        int(self.r * math.cos(
+                            math.radians(
+                                ((360 / self.circle_divisions) * i)
+                                + self.offset_degrees
+                                ))
                             )
-                                )
                     ),
                     (
-                            self.origin_y +
-                            int(self.r * math.cos(
-                                math.radians(
-                                    ((
-                                                 360 /
-                                                 self.circle_divisions) * i)
-                                    + self.offset_degrees
-                                )
+                        self.origin_y -
+                        int(self.r * math.sin(
+                            math.radians(
+                                ((360 / self.circle_divisions) * i)
+                                + self.offset_degrees
+                                ))
                             )
-                                )
                     )
                 )
             )
@@ -76,26 +69,22 @@ class ShapeWheelSlice(ShapeWheel):
             # at sliceNo*1/12circle
             (
                 (
-                        self.origin_x +
-                        int(self.r * math.sin(
-                            math.radians(
-                                ((
-                                             360 / self.circle_divisions) *
-                                 self.slice_no) + self.offset_degrees
-                            )
+                    self.origin_x -
+                    int(self.r * math.cos(
+                        math.radians(
+                            ((360 / self.circle_divisions) *
+                             self.slice_no) + self.offset_degrees
+                            ))
                         )
-                            )
                 ),
                 (
-                        self.origin_y +
-                        int(self.r * math.cos(
-                            math.radians(
-                                ((
-                                             360 / self.circle_divisions) *
-                                 self.slice_no) + self.offset_degrees
-                            )
+                    self.origin_y -
+                    int(self.r * math.sin(
+                        math.radians(
+                            ((360 / self.circle_divisions) *
+                             self.slice_no) + self.offset_degrees
+                            ))
                         )
-                            )
                 )
             )
         )
@@ -104,26 +93,24 @@ class ShapeWheelSlice(ShapeWheel):
             # at (sliceNo+1)*1/12circle
             (
                 (
-                        self.origin_x +
-                        int(self.r * math.sin(
-                            math.radians(
-                                ((360 / self.circle_divisions) * (
-                                            self.slice_no + 1)) +
-                                self.offset_degrees
-                            )
+                    self.origin_x -
+                    int(self.r * math.cos(
+                        math.radians(
+                            ((360 / self.circle_divisions) * (
+                                        self.slice_no + 1)) +
+                            self.offset_degrees
+                            ))
                         )
-                            )
                 ),
                 (
-                        self.origin_y +
-                        int(self.r * math.cos(
-                            math.radians(
-                                ((360 / self.circle_divisions) * (
-                                            self.slice_no + 1)) +
-                                self.offset_degrees
-                            )
+                    self.origin_y -
+                    int(self.r * math.sin(
+                        math.radians(
+                            ((360 / self.circle_divisions) * (
+                                        self.slice_no + 1)) +
+                            self.offset_degrees
+                            ))
                         )
-                            )
                 )
             )
         )
@@ -179,31 +166,63 @@ class WheelControl(ControlSystem):
         # Run superclass __init__ to inherit all of those instance attributes
         super(self.__class__, self).__init__(*args, **kwargs)
         self.r = int(self.canvas_height / 2)
-        self.rotate_offset = 0
+        # rorate_offset tracks the overall rotation of the wheel in degrees
+        # Start at 90 degrees so element 0 is at the top
+        # As the user rotates the wheel, this value is incremented/decremented
+        self.rotate_offset = 90  # Start at 90 degrees
+
+        # These are used to track rotation animation of the wheel
+        # rotate_steps tracks how many remaining frames of rotation are left
+        # to animate.
+        # rotate_iterator will be 1 or -1, and is added to rotate_offset once
+        # per cycle until rotate_steps runs out
         self.rotate_steps = 0
         self.rotate_iterator = 0
-        self.offset_degrees = int(360 / 24)
+        # rotate_amount is how many degrees to hop per event
+        # 1 degree per event makes turning the circle sloooow
+        self.rotate_amount = int(360 / 12)
+        # rotate_speedup is a multiplier of frames to skip, to make
+        # animation super quick.  Factors of 30 will work best
+        self.rotate_speedup = 10
 
-    # def init_surface(self):
-    #     # WheelControl-specific instance attributes
-    #     setattr(self, "r", int(self.canvas_height / 2))
-    #     setattr(self, "rotate_offset", 0)
-    #     setattr(self, "rotate_steps", 0)
-    #     setattr(self, "rotate_iterator", 0)
-    #     setattr(self, "offset_degrees",
-    #             int(360 / 24))  # Control offset degrees
+        # The circle is divided in to 12 segments
+        # But I want a _side_ to be oriented upwards, not a _point_
+        # So, rotate an additional 1/24th of a circle
+        self.offset_degrees = int(-360 / 24)
+
+    def rotate_wheel(self, direction):
+        # Set direction to 1 for clockwise rotation
+        # Set direction to -1 for counterclockwise rotation
+        # It's an integer of degrees added to the overall rotation
+        # If this is called and there is no rotation currently, begin
+        #   rotation immediately
+        if self.rotate_steps == 0:
+            self.rotate_steps = int(self.rotate_amount / self.rotate_speedup)
+            self.rotate_iterator = direction
+        else:
+            # If we receive a rotate call and are already rotating in that
+            #   direction, do nothing.
+            # Otherwise, if we receive a rotate call and it's for the opposite
+            #   direction, reverse the rotation immediately
+            if self.rotate_iterator != direction:
+                # Compensate for how far we've already been rotating
+                self.rotate_steps = int(self.rotate_amount /
+                                        self.rotate_speedup) - \
+                                    self.rotate_steps
+                # and reverse the rotation
+                self.rotate_iterator = direction
 
     def update_control(self, events):
+        # Handle the dict of events passed in for this update
         for event in events:
-            # Should put a case here
             if event == "K_a":
-                self.rotate_steps = 10
-                self.rotate_iterator = 1
+                self.rotate_wheel(1)
             if event == "K_d":
-                self.rotate_steps = 10
-                self.rotate_iterator = -1
+                self.rotate_wheel(-1)
+
+        # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
-            self.rotate_offset += self.rotate_iterator
+            self.rotate_offset += (self.rotate_iterator * self.rotate_speedup)
             self.rotate_steps -= 1
 
     def draw_control(self):
@@ -353,7 +372,7 @@ class Helm:
                         events["K_d"] = True
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
-                    events)  # update control attributes
+                    events)  # update control attributes with a dict of events
 
             self.clock.tick(60)  # 60 fps
 
