@@ -25,7 +25,14 @@ class ShapeWheel(object):
         self.canvas_height = (canvas_size + (self.canvas_margin * 2))
         self.label_list = label_list
 
+        # offset_orientation is a number of degrees added to everything
+        # to set an overall coordinate system orientation
+        self.offset_orientation = 90
+
+        # list of coordinates representing this shape
         self.coordinates = []
+        # associates list of degrees from the origin for each coordinate pair
+        self.degrees = []
         self.find_coordinates()
 
     def find_coordinates(self):
@@ -40,6 +47,7 @@ class ShapeWheel(object):
                             math.radians(
                                 ((360 / self.circle_divisions) * i)
                                 + self.offset_degrees
+                                + self.offset_orientation
                                 ))
                             )
                     ),
@@ -49,10 +57,15 @@ class ShapeWheel(object):
                             math.radians(
                                 ((360 / self.circle_divisions) * i)
                                 + self.offset_degrees
+                                + self.offset_orientation
                                 ))
                             )
                     )
                 )
+            )
+            self.degrees.append(
+                int(-((360 / self.circle_divisions) * i))
+                - self.offset_degrees
             )
 
 
@@ -74,6 +87,7 @@ class ShapeWheelSlice(ShapeWheel):
                         math.radians(
                             ((360 / self.circle_divisions) *
                              self.slice_no) + self.offset_degrees
+                            + self.offset_orientation
                             ))
                         )
                 ),
@@ -83,6 +97,7 @@ class ShapeWheelSlice(ShapeWheel):
                         math.radians(
                             ((360 / self.circle_divisions) *
                              self.slice_no) + self.offset_degrees
+                            + self.offset_orientation
                             ))
                         )
                 )
@@ -99,6 +114,7 @@ class ShapeWheelSlice(ShapeWheel):
                             ((360 / self.circle_divisions) * (
                                         self.slice_no + 1)) +
                             self.offset_degrees
+                            + self.offset_orientation
                             ))
                         )
                 ),
@@ -109,10 +125,15 @@ class ShapeWheelSlice(ShapeWheel):
                             ((360 / self.circle_divisions) * (
                                         self.slice_no + 1)) +
                             self.offset_degrees
+                            + self.offset_orientation
                             ))
                         )
                 )
             )
+        )
+        self.degrees.append(
+            int(-((360 / self.circle_divisions) * self.slice_no))
+            - self.offset_degrees
         )
 
 
@@ -142,11 +163,12 @@ class ControlSystem(object):
     def draw_polygon(self, shape):
         pygame.draw.polygon(self.surface, self.color, shape.coordinates, 1)
 
-    def draw_label_list(self, shape, labels):
+    def draw_label_circle(self, shape, labels):
         coord_pair = 0
         for coordinates in shape.coordinates:
             text = self.font_medium.render(labels[coord_pair]['noteName'],
                                            False, self.color)
+            text = pygame.transform.rotate(text, shape.degrees[coord_pair])
             text_x_center = int(text.get_width() / 2)
             text_y_center = int(text.get_height() / 2)
             # Bit on to the surface:
@@ -166,10 +188,9 @@ class WheelControl(ControlSystem):
         # Run superclass __init__ to inherit all of those instance attributes
         super(self.__class__, self).__init__(*args, **kwargs)
         self.r = int(self.canvas_height / 2)
-        # rorate_offset tracks the overall rotation of the wheel in degrees
-        # Start at 90 degrees so element 0 is at the top
+        # rotate_offset tracks the overall rotation of the wheel in degrees
         # As the user rotates the wheel, this value is incremented/decremented
-        self.rotate_offset = 90  # Start at 90 degrees
+        self.rotate_offset = 0
 
         # These are used to track rotation animation of the wheel
         # rotate_steps tracks how many remaining frames of rotation are left
@@ -186,8 +207,8 @@ class WheelControl(ControlSystem):
         self.rotate_speedup = 10
 
         # The circle is divided in to 12 segments
-        # But I want a _side_ to be oriented upwards, not a _point_
-        # So, rotate an additional 1/24th of a circle
+        # But if want a _side_ to be oriented upwards, not a _point_
+        # then back it up an additional 1/24th of a circle
         self.offset_degrees = int(-360 / 24)
 
     def rotate_wheel(self, direction):
@@ -234,15 +255,14 @@ class WheelControl(ControlSystem):
                                   offset_degrees=self.rotate_offset,
                                   canvas_margin=self.canvas_margin,
                                   label_list=self.notes)
-        self.draw_label_list(label_circle, self.notes)
+        self.draw_label_circle(label_circle, self.notes)
 
         # Draw the slices
-        for i in range(1):
+        for i in [0, 1, 2, 3, 4, 5, 11]:
             polygon = ShapeWheelSlice(canvas_size=self.r * 2,
                                       r=self.r,
                                       slice_no=i,
-                                      offset_degrees=self.offset_degrees +
-                                      self.rotate_offset,
+                                      offset_degrees=self.offset_degrees,
                                       canvas_margin=self.canvas_margin)
             self.draw_polygon(polygon)
 
@@ -252,18 +272,18 @@ class Helm:
 
         # Musical attributes
         self.notes = [
-            {'noteName': 'c', 'kbNum': 1, 'wheelPos': 1},
-            {'noteName': 'g', 'kbNum': 8, 'wheelPos': 2},
-            {'noteName': 'd', 'kbNum': 3, 'wheelPos': 3},
-            {'noteName': 'a', 'kbNum': 10, 'wheelPos': 4},
-            {'noteName': 'e', 'kbNum': 5, 'wheelPos': 5},
-            {'noteName': 'b', 'kbNum': 12, 'wheelPos': 6},
-            {'noteName': 'gb/f#', 'kbNum': 7, 'wheelPos': 7},
-            {'noteName': 'db/c#', 'kbNum': 2, 'wheelPos': 8},
-            {'noteName': 'ab/g#', 'kbNum': 9, 'wheelPos': 9},
-            {'noteName': 'eb/d#', 'kbNum': 4, 'wheelPos': 10},
-            {'noteName': 'bb/a#', 'kbNum': 11, 'wheelPos': 11},
-            {'noteName': 'f', 'kbNum': 6, 'wheelPos': 12}
+            {'noteName': 'C', 'kbNum': 1, 'wheelPos': 1},
+            {'noteName': 'G', 'kbNum': 8, 'wheelPos': 2},
+            {'noteName': 'D', 'kbNum': 3, 'wheelPos': 3},
+            {'noteName': 'A', 'kbNum': 10, 'wheelPos': 4},
+            {'noteName': 'E', 'kbNum': 5, 'wheelPos': 5},
+            {'noteName': 'B', 'kbNum': 12, 'wheelPos': 6},
+            {'noteName': 'Gb/F#', 'kbNum': 7, 'wheelPos': 7},
+            {'noteName': 'Db/C#', 'kbNum': 2, 'wheelPos': 8},
+            {'noteName': 'Ab/G#', 'kbNum': 9, 'wheelPos': 9},
+            {'noteName': 'Eb/D#', 'kbNum': 4, 'wheelPos': 10},
+            {'noteName': 'Bb/A#', 'kbNum': 11, 'wheelPos': 11},
+            {'noteName': 'F', 'kbNum': 6, 'wheelPos': 12}
         ]
 
         # Graphics attributes
