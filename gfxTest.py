@@ -137,22 +137,65 @@ class ShapeWheelSlice(ShapeWheel):
         )
 
 
+class ShapeWheelRay(ShapeWheel):
+    def find_coordinates(self):
+        self.coordinates.append(  # Origin
+            (
+                self.origin_x,
+                self.origin_y
+            )
+        )
+        self.coordinates.append(
+                (
+                    (
+                        self.origin_x -
+                        int(self.r * math.cos(
+                            math.radians(
+                                ((360 / self.circle_divisions) * self.slice_no)
+                                + self.offset_degrees
+                                + self.offset_orientation
+                                ))
+                            )
+                    ),
+                    (
+                        self.origin_y -
+                        int(self.r * math.sin(
+                            math.radians(
+                                ((360 / self.circle_divisions) * self.slice_no)
+                                + self.offset_degrees
+                                + self.offset_orientation
+                                ))
+                            )
+                    )
+                )
+            )
+        self.degrees.append(
+            int(-((360 / self.circle_divisions) * self.slice_no))
+            - self.offset_degrees
+        )
+
+
 class ControlSystem(object):
     def __init__(self, canvas_width, canvas_height, canvas_margin, color,
-                 bg_color, notes, blit_x, blit_y, font_medium):
+                 color_bg, color_accent, notes, blit_x, blit_y, font_medium,
+                 font_x_large):
         self.surface = None
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
         self.canvas_margin = canvas_margin
         self.color = color
-        self.bg_color = bg_color
+        self.color_bg = color_bg
+        self.color_accent = color_accent
         self.notes = notes  # Holds the dict/lists representing the scale
         # notes, their positions and values, etc
+        self.key = 0  # Key is the index of the notes dict indicating the key
+        self.note_selection = 0  # The currently selected note index
         self.blit_x = blit_x  # The X location in which this entire control
         # should be blit to the screen canvas
         self.blit_y = blit_y  # The Y location in which this entire control
         # should be blit to the screen canvas
         self.font_medium = font_medium  # Medium sized font
+        self.font_x_large = font_x_large  # XL sized font
         self.surface = pygame.Surface(
             (int(self.canvas_width + (self.canvas_margin * 2)),
              int(self.canvas_height + (self.canvas_margin * 2))))
@@ -160,21 +203,26 @@ class ControlSystem(object):
     def init_surface(self):
         pass
 
-    def draw_polygon(self, shape):
-        pygame.draw.polygon(self.surface, self.color, shape.coordinates, 1)
+    def draw_polygon(self, shape, width, color):
+        pygame.draw.polygon(self.surface, color, shape.coordinates, width)
 
     def draw_label_circle(self, shape, labels):
         coord_pair = 0
         for coordinates in shape.coordinates:
-            text = self.font_medium.render(labels[coord_pair]['noteName'],
-                                           False, self.color)
-            text = pygame.transform.rotate(text, shape.degrees[coord_pair])
-            text_x_center = int(text.get_width() / 2)
-            text_y_center = int(text.get_height() / 2)
-            # Bit on to the surface:
-            self.surface.blit(text, [coordinates[0] - text_x_center,
-                                     coordinates[1] - text_y_center])
+            self.draw_label(coordinates,
+                            shape.degrees[coord_pair],
+                            labels[coord_pair]['noteName'],
+                            self.font_medium)
             coord_pair += 1
+
+    def draw_label(self, coordinates, degrees, text_label, font):
+        text = font.render(text_label, False, self.color)
+        text = pygame.transform.rotate(text, degrees)
+        text_x_center = int(text.get_width() / 2)
+        text_y_center = int(text.get_height() / 2)
+        # Bit on to the surface:
+        self.surface.blit(text, [coordinates[0] - text_x_center,
+                                 coordinates[1] - text_y_center])
 
     def draw_control(self):
         pass
@@ -192,13 +240,25 @@ class WheelControl(ControlSystem):
         # As the user rotates the wheel, this value is incremented/decremented
         self.rotate_offset = 0
 
+        # rotate_offset_note tracks overall rotation, but for the selected
+        # note
+        self.rotate_offset_note = 0
+
         # These are used to track rotation animation of the wheel
         # rotate_steps tracks how many remaining frames of rotation are left
-        # to animate.
+        # to animate for key wheel rotation
         # rotate_iterator will be 1 or -1, and is added to rotate_offset once
         # per cycle until rotate_steps runs out
         self.rotate_steps = 0
         self.rotate_iterator = 0
+
+        # These are used to track rotation animation of the note selection
+        # rotate_steps_note tracks how many remaining frames of rotation are
+        # left to animate for note selection
+        # rotate_iterator_note, same as above but for note selection
+        self.rotate_steps_note = 0
+        self.rotate_iterator_note = 0
+
         # rotate_amount is how many degrees to hop per event
         # 1 degree per event makes turning the circle sloooow
         self.rotate_amount = int(360 / 12)
@@ -220,6 +280,12 @@ class WheelControl(ControlSystem):
         if self.rotate_steps == 0:
             self.rotate_steps = int(self.rotate_amount / self.rotate_speedup)
             self.rotate_iterator = direction
+            # Set the key index as we turn around
+            self.key -= self.rotate_iterator
+            if self.key > 11:
+                self.key = 0
+            if self.key < 0:
+                self.key = 11
         else:
             # If we receive a rotate call and are already rotating in that
             #   direction, do nothing.
@@ -232,6 +298,47 @@ class WheelControl(ControlSystem):
                                     self.rotate_steps
                 # and reverse the rotation
                 self.rotate_iterator = direction
+                # Set the key index as we turn around
+                self.key -= self.rotate_iterator
+                if self.key > 11:
+                    self.key = 0
+                if self.key < 0:
+                    self.key = 11
+
+    def rotate_note(self, direction):
+        # Set direction to 1 for clockwise rotation
+        # Set direction to -1 for counterclockwise rotation
+        # It's an integer of degrees added to the overall rotation
+        # If this is called and there is no rotation currently, begin
+        #   rotation immediately
+        if self.rotate_steps_note == 0:
+            self.rotate_steps_note = int(self.rotate_amount /
+                                         self.rotate_speedup)
+            self.rotate_iterator_note = direction
+            # Set the selected note index as we turn around
+            self.note_selection -= self.rotate_iterator_note
+            if self.note_selection > 11:
+                self.note_selection = 0
+            if self.note_selection < 0:
+                self.note_selection = 11
+        else:
+            # If we receive a rotate call and are already rotating in that
+            #   direction, do nothing.
+            # Otherwise, if we receive a rotate call and it's for the opposite
+            #   direction, reverse the rotation immediately
+            if self.rotate_iterator_note != direction:
+                # Compensate for how far we've already been rotating
+                self.rotate_steps_note = int(self.rotate_amount /
+                                             self.rotate_speedup) - \
+                                    self.rotate_steps_note
+                # and reverse the rotation
+                self.rotate_iterator_note = direction
+                # Set the selected note index as we turn around
+                self.note_selection -= self.rotate_iterator_note
+                if self.note_selection > 11:
+                    self.note_selection = 0
+                if self.note_selection < 0:
+                    self.note_selection = 11
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
@@ -240,17 +347,65 @@ class WheelControl(ControlSystem):
                 self.rotate_wheel(1)
             if event == "K_d":
                 self.rotate_wheel(-1)
+            if event == "K_q":
+                self.rotate_note(1)
+            if event == "K_e":
+                self.rotate_note(-1)
+            print("Key:", self.key, ", Note:", self.note_selection)
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
             self.rotate_offset += (self.rotate_iterator * self.rotate_speedup)
             self.rotate_steps -= 1
 
+        if self.rotate_steps_note > 0:
+            self.rotate_offset_note += (self.rotate_iterator_note *
+                                        self.rotate_speedup)
+            self.rotate_steps_note -= 1
+
     def draw_control(self):
-        self.surface.fill(self.bg_color)
+
+        ####################
+        # Background stuff #
+        ####################
+
+        self.surface.fill(self.color_bg)
+
+        # Key label
+        for i in [0]:  # Wheel position 0
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r,
+                                    slice_no=i,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            "Key",
+                            self.font_medium)
+
+        # Labels for directions
+        for i in [1]:  # Wheel position 1
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r,
+                                    slice_no=i,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            "5ths >",
+                            self.font_medium)
+        for i in [11]:  # Wheel position 11
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r,
+                                    slice_no=i,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            "< 4ths",
+                            self.font_medium)
+
         # Draw the reference circle
+        # This uses self.rotate_offset, so it's a rotating layer
         label_circle = ShapeWheel(canvas_size=self.r * 2,
-                                  r=self.r - 50,
+                                  r=self.r - 56,
                                   slice_no=1,
                                   offset_degrees=self.rotate_offset,
                                   canvas_margin=self.canvas_margin,
@@ -259,13 +414,32 @@ class WheelControl(ControlSystem):
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:
+            # Inner triangles bg color fill
             polygon = ShapeWheelSlice(canvas_size=self.r * 2,
-                                      r=self.r,
+                                      r=self.r - 70,
                                       slice_no=i,
                                       offset_degrees=self.offset_degrees,
                                       canvas_margin=self.canvas_margin)
-            self.draw_polygon(polygon)
+            self.draw_polygon(polygon, 0, self.color_accent)
 
+            # Outlines
+            polygon = ShapeWheelSlice(canvas_size=self.r * 2,
+                                      r=self.r - 12,
+                                      slice_no=i,
+                                      offset_degrees=self.offset_degrees,
+                                      canvas_margin=self.canvas_margin)
+            self.draw_polygon(polygon, 1, self.color)
+
+        # Draw the selected note indicator
+        polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                r=self.r - 128,
+                                slice_no=self.note_selection,
+                                offset_degrees=self.rotate_offset_note,
+                                canvas_margin=self.canvas_margin)
+        self.draw_label(polygon.coordinates[1],
+                        polygon.degrees[0],
+                        "^",
+                        self.font_x_large)
 
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
@@ -301,6 +475,9 @@ class Helm:
         self.white = (255, 255, 255)
         self.red = (255, 0, 0)
         self.orange = (255, 94, 19)
+        self.orange_25 = (64, 23, 4)
+        self.orange_50 = (128, 47, 9)
+        self.orange_75 = (191, 69, 13)
 
         self.running = False  # will be True once self.run() is called
 
@@ -314,15 +491,16 @@ class Helm:
                 [self.canvas_width, self.canvas_height])
             pygame.display.set_caption('helm')  # Set the window title for fun
 
+        # Fonts - very slow
+        # Initialize a font.  This takes forever, like maybe 8 seconds.  But
+        # happens once.
+        self.font_med = pygame.font.SysFont('courier', 32)
+        self.font_x_large = pygame.font.SysFont('courier', 80)
+        # Listing available fonts, fun for later:
         # fonts = pygame.font.get_fonts()
         # print(len(fonts))
         # for f in fonts:
         # 	print(f)
-
-        # Fonts - very slow
-        # Initialize a font.  This takes forever, like maybe 8 seconds.  But
-        # happens once.
-        self.fontMed = pygame.font.SysFont('courier', 32)
 
         # controlSurfaces list contains each controlSystem object that is
         # rendered.
@@ -342,16 +520,15 @@ class Helm:
                                         self.canvas_margin,  # render margin
                                         self.orange, self.black,
                                         # fg color and bg color
+                                        self.orange_25,  # accent color
                                         self.notes,  # list of note values
                                         int((self.canvas_width / 2) - (
                                                     control_ff_wheel_size /
                                                     2)),
-                                        0,  # Blit location
-                                        self.fontMed)
-        # control_ff_wheel.init_surface()
-        # Rotate 360?
-        # control_ff_wheel.rotateSteps = 360
-        # control_ff_wheel.rotateIterator = -1
+                                        self.canvas_margin,  # Blit location
+                                        self.font_med,
+                                        self.font_x_large)
+
         # Append the ffWheel to the controlSurfaces list
         self.controlSurfaces.append(control_ff_wheel)
 
@@ -390,6 +567,10 @@ class Helm:
                         events["K_a"] = True
                     if event.key == pygame.K_d:
                         events["K_d"] = True
+                    if event.key == pygame.K_q:
+                        events["K_q"] = True
+                    if event.key == pygame.K_e:
+                        events["K_e"] = True
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
                     events)  # update control attributes with a dict of events
