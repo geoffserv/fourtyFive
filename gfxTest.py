@@ -177,8 +177,8 @@ class ShapeWheelRay(ShapeWheel):
 
 class ControlSystem(object):
     def __init__(self, canvas_width, canvas_height, canvas_margin, color,
-                 color_bg, color_accent, notes, blit_x, blit_y, font_medium,
-                 font_x_large):
+                 color_bg, color_accent, notes, blit_x, blit_y, font_small,
+                 font_medium, font_x_large):
         self.surface = None
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
@@ -194,6 +194,7 @@ class ControlSystem(object):
         # should be blit to the screen canvas
         self.blit_y = blit_y  # The Y location in which this entire control
         # should be blit to the screen canvas
+        self.font_small = font_small
         self.font_medium = font_medium  # Medium sized font
         self.font_x_large = font_x_large  # XL sized font
         self.surface = pygame.Surface(
@@ -212,11 +213,13 @@ class ControlSystem(object):
             self.draw_label(coordinates,
                             shape.degrees[coord_pair],
                             labels[coord_pair]['noteName'],
-                            self.font_medium)
+                            self.font_medium,
+                            self.color)
             coord_pair += 1
 
-    def draw_label(self, coordinates, degrees, text_label, font):
-        text = font.render(text_label, False, self.color)
+    def draw_label(self, coordinates, degrees, text_label, font,
+                   color):
+        text = font.render(text_label, False, color)
         text = pygame.transform.rotate(text, degrees)
         text_x_center = int(text.get_width() / 2)
         text_y_center = int(text.get_height() / 2)
@@ -316,7 +319,13 @@ class WheelControl(ControlSystem):
                                          self.rotate_speedup)
             self.rotate_iterator_note = direction
             # Set the selected note index as we turn around
-            self.note_selection -= self.rotate_iterator_note
+            self.note_selection += self.rotate_iterator_note
+            if self.note_selection == 6:
+                self.note_selection = 11
+                self.rotate_offset_note += 150
+            if self.note_selection == 10:
+                self.note_selection = 5
+                self.rotate_offset_note -= 150
             if self.note_selection > 11:
                 self.note_selection = 0
             if self.note_selection < 0:
@@ -334,11 +343,18 @@ class WheelControl(ControlSystem):
                 # and reverse the rotation
                 self.rotate_iterator_note = direction
                 # Set the selected note index as we turn around
-                self.note_selection -= self.rotate_iterator_note
+                self.note_selection += self.rotate_iterator_note
+                if self.note_selection == 6:
+                    self.note_selection = 11
+                    self.rotate_offset_note += 150
+                if self.note_selection == 10:
+                    self.note_selection = 5
+                    self.rotate_offset_note -= 150
                 if self.note_selection > 11:
                     self.note_selection = 0
                 if self.note_selection < 0:
                     self.note_selection = 11
+        print("self.rotate_offset_note:", self.rotate_offset_note)
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
@@ -348,9 +364,9 @@ class WheelControl(ControlSystem):
             if event == "K_d":
                 self.rotate_wheel(-1)
             if event == "K_q":
-                self.rotate_note(1)
-            if event == "K_e":
                 self.rotate_note(-1)
+            if event == "K_e":
+                self.rotate_note(1)
             print("Key:", self.key, ", Note:", self.note_selection)
 
         # Perform any animation steps needed for this update
@@ -380,7 +396,8 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "Key",
-                            self.font_medium)
+                            self.font_medium,
+                            self.color)
 
         # Labels for directions
         for i in [1]:  # Wheel position 1
@@ -391,7 +408,8 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "5ths >",
-                            self.font_medium)
+                            self.font_medium,
+                            self.color_accent)
         for i in [11]:  # Wheel position 11
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r,
@@ -400,7 +418,8 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "< 4ths",
-                            self.font_medium)
+                            self.font_medium,
+                            self.color_accent)
 
         # Draw the reference circle
         # This uses self.rotate_offset, so it's a rotating layer
@@ -430,16 +449,69 @@ class WheelControl(ControlSystem):
                                       canvas_margin=self.canvas_margin)
             self.draw_polygon(polygon, 1, self.color)
 
+        labels = {11: {"step": 4,
+                       "triad": "MAJ",
+                       "mode": "Lydian"},
+                  0: {"step": 1,
+                       "triad": "MAJ",
+                       "mode": "Ionian"},
+                  1: {"step": 5,
+                      "triad": "MAJ",
+                      "mode": "Mixolydian"},
+                  2: {"step": 2,
+                      "triad": "min",
+                      "mode": "Dorian"},
+                  3: {"step": 6,
+                      "triad": "min",
+                      "mode": "Aeolian"},
+                  4: {"step": 3,
+                      "triad": "min",
+                      "mode": "Phrygian"},
+                  5: {"step": 7,
+                      "triad": "dim",
+                      "mode": "Locrian"},
+                 }
+
+        for label in labels:  # The 4
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r - 170,
+                                    slice_no=label,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            str(labels[label]["step"]),
+                            self.font_medium,
+                            self.color_bg)
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r - 210,
+                                    slice_no=label,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            str(labels[label]["triad"]),
+                            self.font_small,
+                            self.color_bg)
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r - 365,
+                                    slice_no=label,
+                                    canvas_margin=self.canvas_margin)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0]+90,
+                            str(labels[label]["mode"]),
+                            self.font_small,
+                            self.color_bg)
+
         # Draw the selected note indicator
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                r=self.r - 128,
-                                slice_no=self.note_selection,
+                                r=self.r - 126,
+                                slice_no=0,
                                 offset_degrees=self.rotate_offset_note,
                                 canvas_margin=self.canvas_margin)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
                         "^",
-                        self.font_x_large)
+                        self.font_x_large,
+                            self.color)
 
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
@@ -494,6 +566,7 @@ class Helm:
         # Fonts - very slow
         # Initialize a font.  This takes forever, like maybe 8 seconds.  But
         # happens once.
+        self.font_small = pygame.font.SysFont('courier', 24)
         self.font_med = pygame.font.SysFont('courier', 32)
         self.font_x_large = pygame.font.SysFont('courier', 80)
         # Listing available fonts, fun for later:
@@ -512,7 +585,7 @@ class Helm:
         self.controlSurfaces = []
 
         # The size of the ffWheel's surface will be __% of the screen
-        control_ff_wheel_size = int(self.canvas_height * 0.8)
+        control_ff_wheel_size = int(self.canvas_height * 0.98)
         # Create a ffWheel control.  Init.
         control_ff_wheel = WheelControl(control_ff_wheel_size,
                                         control_ff_wheel_size,
@@ -522,10 +595,9 @@ class Helm:
                                         # fg color and bg color
                                         self.orange_25,  # accent color
                                         self.notes,  # list of note values
-                                        int((self.canvas_width / 2) - (
-                                                    control_ff_wheel_size /
-                                                    2)),
+                                        self.canvas_margin,
                                         self.canvas_margin,  # Blit location
+                                        self.font_small,
                                         self.font_med,
                                         self.font_x_large)
 
