@@ -12,7 +12,9 @@ from helm_controls import WheelControl
 # Can't even install the downstream dependency evdev unless running linux,
 # part of the install process checks for kernel header files and so on.
 # If in linux, set to True and connect two Powermates for knob support
-using_griffin_powermate=True
+# Make sure to add the current, non-root UNIX user to the input group
+# in /etc/group, and then re-login.  Otherwise, permission errors
+using_griffin_powermate = False
 if using_griffin_powermate:
     from pypowermate import Powermate
 
@@ -42,6 +44,9 @@ class Helm:
         # Graphics attributes
         # Clock, for tracking events and frame rate
         self.clock = pygame.time.Clock()
+
+        self.fullscreen = False
+
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
 
@@ -66,8 +71,12 @@ class Helm:
         if init_gfx:
             # If this is being run headless, turn initGfx to False
             # This is useful for headless CI testing
-            self.canvas = pygame.display.set_mode(
-                [self.canvas_width, self.canvas_height])
+            if self.fullscreen:
+                self.canvas = pygame.display.set_mode(
+                    (0,0), pygame.FULLSCREEN)
+            else:
+                self.canvas = pygame.display.set_mode(
+                    [self.canvas_width, self.canvas_height])
             pygame.display.set_caption('helm')  # Set the window title for fun
 
         # Fonts - very slow
@@ -142,6 +151,8 @@ class Helm:
                 if event.type == QUIT:  # If the window 'close' button...
                     self.running = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
                     if event.key == pygame.K_a:
                         events["K_a"] = True
                     if event.key == pygame.K_d:
