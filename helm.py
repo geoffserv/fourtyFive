@@ -152,12 +152,12 @@ class Helm:
                         events["K_e"] = True
 
             if using_griffin_powermate:
-                event = self.powermate.read_event()
-                print("event:", event)
-                if event[2] == 1:
-                    events["K_a"] = True
-                if event[2] == -1:
-                    events["K_d"] = True
+                event = self.powermate.read_event(timeout=0)
+                if event:
+                    if event[2] == 1:
+                        events["K_a"] = True
+                    if event[2] == -1:
+                        events["K_d"] = True
 
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
