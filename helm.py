@@ -12,7 +12,7 @@ from helm_controls import WheelControl
 # Can't even install the downstream dependency evdev unless running linux,
 # part of the install process checks for kernel header files and so on.
 # If in linux, set to True and connect two Powermates for knob support
-using_griffin_powermate=False
+using_griffin_powermate=True
 if using_griffin_powermate:
     from pypowermate import Powermate
 
@@ -21,7 +21,7 @@ class Helm:
 
         self.powermate = None
         if using_griffin_powermate:
-            self.powermate = Powermate('/dev/input/by-id/usb-Griffin_Technology_Inc._Griffin_PowerMate-event-if00')
+            self.powermate = Powermate('/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00')
 
         # Musical attributes
         self.notes = [
