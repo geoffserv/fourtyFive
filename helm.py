@@ -73,7 +73,9 @@ class Helm:
             # This is useful for headless CI testing
             if self.fullscreen:
                 self.canvas = pygame.display.set_mode(
-                    (0,0), pygame.FULLSCREEN)
+                    [self.canvas_width, self.canvas_height], pygame.NOFRAME)
+                pygame.display.toggle_fullscreen()
+                # Workaround for pygame.FULLSCREEN going blank in Ubuntu
             else:
                 self.canvas = pygame.display.set_mode(
                     [self.canvas_width, self.canvas_height])
@@ -82,14 +84,13 @@ class Helm:
         # Fonts - very slow
         # Initialize a font.  This takes forever, like maybe 8 seconds.  But
         # happens once.
-        self.font_small = pygame.font.SysFont('courier', 24)
+        self.font_small = pygame.font.SysFont('courier', 24, bold=True)
         self.font_med = pygame.font.SysFont('courier', 32)
         self.font_x_large = pygame.font.SysFont('courier', 80)
         # Listing available fonts, fun for later:
         # fonts = pygame.font.get_fonts()
-        # print(len(fonts))
         # for f in fonts:
-        # 	print(f)
+    	#     print(f)
 
         # controlSurfaces list contains each controlSystem object that is
         # rendered.
