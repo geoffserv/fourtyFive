@@ -1,11 +1,16 @@
 import pygame
-from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice
+from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice, \
+                        ShapeNotesList
 
 
 class ControlSystem(object):
+
+    key = 0  # Key is the index of the notes dict indicating the key
+
     def __init__(self, canvas_width, canvas_margin, color,
                  color_bg, color_accent, notes, blit_x, blit_y, font_small,
-                 font_medium, font_medium_bold, font_x_large):
+                 font_medium, font_medium_bold, font_x_large,
+                 wheel_control=None):
         self.surface = None
         self.canvas_width = canvas_width
         self.canvas_height = canvas_width  # 1:1 control canvas ratio default
@@ -15,7 +20,6 @@ class ControlSystem(object):
         self.color_accent = color_accent
         self.notes = notes  # Holds the dict/lists representing the scale
         # notes, their positions and values, etc
-        self.key = 0  # Key is the index of the notes dict indicating the key
         self.chord_position = 0  # The currently selected note position
         self.chord_selection = 0  # Currently selected chord root note index
         self.blit_x = blit_x  # The X location in which this entire control
@@ -36,17 +40,17 @@ class ControlSystem(object):
     def draw_polygon(self, shape, width, color):
         pygame.draw.polygon(self.surface, color, shape.coordinates, width)
 
-    def draw_key_labels(self, shape, labels):
+    def draw_key_labels(self, shape, labels, key):
         coord_pair = 0
         for coordinates in shape.coordinates:
-            if (coord_pair >= self.key) and \
-               (coord_pair <= (self.key + 5) ) and \
-                    (self.key in range(7)):
+            if (coord_pair >= key) and \
+               (coord_pair <= (key + 5) ) and \
+                    (key in range(7)):
                 # sharps
                 note_label = labels[coord_pair]['sharpName']
             else:
                 note_label = labels[coord_pair]['noteName']
-            if self.key == coord_pair:
+            if key == coord_pair:
                 font = self.font_medium_bold
             else:
                 font = self.font_medium
@@ -80,25 +84,68 @@ class ChordControl(ControlSystem):
         super(self.__class__, self).__init__(*args, **kwargs)
 
         # Reference to a wheelControl to get / set attributes
-        self.wheelControl = kwargs.get('wheelControl', None)
-        self.canvas_height = 200
+        self.wheel_control = kwargs.get('wheel_control', None)
+        self.canvas_height = 400
         self.surface = pygame.Surface(
             (int(self.canvas_width + (self.canvas_margin * 2)),
              int(self.canvas_height + (self.canvas_margin * 2))))
+
+        # For now, how intervals are defined:
+        # 1 = Root
+        # 2 = Fifth
+        # 3 = Second
+        # 4 = Sixth
+        # 5 = Third
+        # 6 = Seventh
+        # 12 = Fourth
+        self.chord_definitions = {'1, 3, 5': (1, 5, 2),
+                                  '1, 3, 5, 6': (1, 5, 2, 4),
+                                  '1, 3, 5, 7': (1, 5, 2, 6),
+                                  '1, 3, 5, 9': (1, 5, 2, 3),
+                                  '1, 3, 5, 7, 9': (1, 5, 2, 6, 3),
+                                  '1, 5, 7, 9, 11': (1, 2, 6, 3, 12)}
+
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
         for event in events:
             if event == "chord_majortriad_start":
-                print("major triad on")
+                print("major triad on. key:", self.key)
             if event == "chord_majortriad_stop":
-                print("major triad off")
+                print("major triad off. key:", self.key)
+
+    def draw_squares(self, shape, color, width, chord_root, chord_def):
+        coord_pair = 0
+        for coordinates in shape.coordinates_boxes:
+            if int( (self.notes[coord_pair]['wheelPos'] -
+                     self.wheel_control.chord_selection
+                     )
+                  % 13 ) in chord_def:
+                rect = pygame.Rect(coordinates)
+                pygame.draw.rect(self.surface, color, rect, width)
+            coord_pair += 1
 
     def draw_control(self):
         self.surface.fill(self.color_bg)
 
-        for note in self.notes:
-            pass
+        line_spacing = 0
+        for chord_def in self.chord_definitions:
+            line_coords = ShapeNotesList(spacing_width=44,
+                                         canvas_margin=self.canvas_margin,
+                                         line_spacing=line_spacing,
+                                         left_margin=226)
+            self.draw_squares(line_coords, self.color, 1,
+                              self.wheel_control.chord_selection,
+                              self.chord_definitions[chord_def])
+            self.draw_key_labels(line_coords, self.notes,
+                                 self.wheel_control.key)
+            self.draw_label((line_coords.coordinates[0][0]-168,
+                             line_coords.coordinates[0][1]),
+                            0,
+                            chord_def,
+                            self.font_small, self.color)
+            line_spacing += 60
+
 
 class WheelControl(ControlSystem):
     def __init__(self, *args, **kwargs):
@@ -175,15 +222,18 @@ class WheelControl(ControlSystem):
             # Set the selected note index as we turn around
             self.chord_position += self.rotate_iterator_chord
             self.chord_position = abs(self.chord_position % 12)
-            if self.chord_position == 6:
-                self.chord_position = 11
-                self.rotate_offset_chord += 150
-            if self.chord_position == 10:
-                self.chord_position = 5
-                self.rotate_offset_chord -= 150
             # Change the chord, too
             self.chord_selection += self.rotate_iterator_chord
             self.chord_selection = abs(self.chord_selection % 12)
+            if self.chord_position == 6:
+                self.chord_position = 11
+                self.chord_selection = 11
+                self.rotate_offset_chord += 150
+            if self.chord_position == 10:
+                self.chord_position = 5
+                self.chord_selection = 5
+                self.rotate_offset_chord -= 150
+
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
@@ -257,9 +307,8 @@ class WheelControl(ControlSystem):
                                   r=self.r - 56,
                                   slice_no=1,
                                   offset_degrees=self.rotate_offset,
-                                  canvas_margin=self.canvas_margin,
-                                  label_list=self.notes)
-        self.draw_key_labels(label_circle, self.notes)
+                                  canvas_margin=self.canvas_margin)
+        self.draw_key_labels(label_circle, self.notes, self.key)
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:

@@ -6,8 +6,7 @@
 
 import pygame
 from pygame.locals import *
-from helm_controls import WheelControl
-from helm_controls import ChordControl
+from helm_controls import WheelControl, ChordControl
 
 # Griffin Powermate support for Linux systems only
 # Can't even install the downstream dependency evdev unless running linux,
@@ -18,7 +17,7 @@ from helm_controls import ChordControl
 using_griffin_powermate = False
 
 if using_griffin_powermate:
-    from pypowermate import Powermate
+    from dqpypowermate import Powermate
 
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
@@ -135,7 +134,7 @@ class Helm:
         # Create a chord control.  Init.
         control_chord = ChordControl(control_chord_size,
                                      self.canvas_margin,  # inner margin
-                                     self.orange, self.orange_25,
+                                     self.orange, self.black,
                                      # fg color and bg color
                                      self.orange_25,  # accent color
                                      self.notes,  # list of note values
@@ -145,7 +144,8 @@ class Helm:
                                      self.font_small_bold,
                                      self.font_med,
                                      self.font_med_bold,
-                                     self.font_x_large)
+                                     self.font_x_large,
+                                     wheel_control=control_ff_wheel)
 
         # Append the chord control to the controlSurfaces list
         self.controlSurfaces.append(control_chord)
