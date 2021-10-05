@@ -3,12 +3,12 @@ from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice
 
 
 class ControlSystem(object):
-    def __init__(self, canvas_width, canvas_height, canvas_margin, color,
+    def __init__(self, canvas_width, canvas_margin, color,
                  color_bg, color_accent, notes, blit_x, blit_y, font_small,
-                 font_medium, font_x_large):
+                 font_medium, font_medium_bold, font_x_large):
         self.surface = None
         self.canvas_width = canvas_width
-        self.canvas_height = canvas_height
+        self.canvas_height = canvas_width  # 1:1 control canvas ratio default
         self.canvas_margin = canvas_margin
         self.color = color
         self.color_bg = color_bg
@@ -16,13 +16,15 @@ class ControlSystem(object):
         self.notes = notes  # Holds the dict/lists representing the scale
         # notes, their positions and values, etc
         self.key = 0  # Key is the index of the notes dict indicating the key
-        self.note_selection = 0  # The currently selected note index
+        self.chord_position = 0  # The currently selected note position
+        self.chord_selection = 0  # Currently selected chord root note index
         self.blit_x = blit_x  # The X location in which this entire control
         # should be blit to the screen canvas
         self.blit_y = blit_y  # The Y location in which this entire control
         # should be blit to the screen canvas
         self.font_small = font_small
         self.font_medium = font_medium  # Medium sized font
+        self.font_medium_bold = font_medium_bold
         self.font_x_large = font_x_large  # XL sized font
         self.surface = pygame.Surface(
             (int(self.canvas_width + (self.canvas_margin * 2)),
@@ -34,13 +36,24 @@ class ControlSystem(object):
     def draw_polygon(self, shape, width, color):
         pygame.draw.polygon(self.surface, color, shape.coordinates, width)
 
-    def draw_label_circle(self, shape, labels):
+    def draw_key_labels(self, shape, labels):
         coord_pair = 0
         for coordinates in shape.coordinates:
+            if (coord_pair >= self.key) and \
+               (coord_pair <= (self.key + 5) ) and \
+                    (self.key in range(7)):
+                # sharps
+                note_label = labels[coord_pair]['sharpName']
+            else:
+                note_label = labels[coord_pair]['noteName']
+            if self.key == coord_pair:
+                font = self.font_medium_bold
+            else:
+                font = self.font_medium
             self.draw_label(coordinates,
                             shape.degrees[coord_pair],
-                            labels[coord_pair]['noteName'],
-                            self.font_medium,
+                            note_label,
+                            font,
                             self.color)
             coord_pair += 1
 
@@ -61,6 +74,32 @@ class ControlSystem(object):
         pass
 
 
+class ChordControl(ControlSystem):
+    def __init__(self, *args, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+        # Reference to a wheelControl to get / set attributes
+        self.wheelControl = kwargs.get('wheelControl', None)
+        self.canvas_height = 200
+        self.surface = pygame.Surface(
+            (int(self.canvas_width + (self.canvas_margin * 2)),
+             int(self.canvas_height + (self.canvas_margin * 2))))
+
+    def update_control(self, events):
+        # Handle the dict of events passed in for this update
+        for event in events:
+            if event == "chord_majortriad_start":
+                print("major triad on")
+            if event == "chord_majortriad_stop":
+                print("major triad off")
+
+    def draw_control(self):
+        self.surface.fill(self.color_bg)
+
+        for note in self.notes:
+            pass
+
 class WheelControl(ControlSystem):
     def __init__(self, *args, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
@@ -72,7 +111,7 @@ class WheelControl(ControlSystem):
 
         # rotate_offset_note tracks overall rotation, but for the selected
         # note
-        self.rotate_offset_note = 0
+        self.rotate_offset_chord = 0
 
         # These are used to track rotation animation of the wheel
         # rotate_steps tracks how many remaining frames of rotation are left
@@ -86,8 +125,8 @@ class WheelControl(ControlSystem):
         # rotate_steps_note tracks how many remaining frames of rotation are
         # left to animate for note selection
         # rotate_iterator_note, same as above but for note selection
-        self.rotate_steps_note = 0
-        self.rotate_iterator_note = 0
+        self.rotate_steps_chord = 0
+        self.rotate_iterator_chord = 0
 
         # rotate_amount is how many degrees to hop per event
         # 1 degree per event makes turning the circle sloooow
@@ -101,110 +140,74 @@ class WheelControl(ControlSystem):
         # then back it up an additional 1/24th of a circle
         self.offset_degrees = int(-360 / 24)
 
+    # TODO these two methods could be collapsed in to one
     def rotate_wheel(self, direction):
         # Set direction to 1 for clockwise rotation
         # Set direction to -1 for counterclockwise rotation
         # It's an integer of degrees added to the overall rotation
         # If this is called and there is no rotation currently, begin
         #   rotation immediately
-        if self.rotate_steps == 0:
-            self.rotate_steps = int(self.rotate_amount / self.rotate_speedup)
+        if ( self.rotate_steps == 0 ) or (self.rotate_iterator != direction):
+            self.rotate_steps = int(self.rotate_amount / self.rotate_speedup) \
+                                    - self.rotate_steps
             self.rotate_iterator = direction
             # Set the key index as we turn around
             self.key -= self.rotate_iterator
-            if self.key > 11:
-                self.key = 0
-            if self.key < 0:
-                self.key = 11
-        else:
-            # If we receive a rotate call and are already rotating in that
-            #   direction, do nothing.
-            # Otherwise, if we receive a rotate call and it's for the opposite
-            #   direction, reverse the rotation immediately
-            if self.rotate_iterator != direction:
-                # Compensate for how far we've already been rotating
-                self.rotate_steps = int(self.rotate_amount /
-                                        self.rotate_speedup) - \
-                                    self.rotate_steps
-                # and reverse the rotation
-                self.rotate_iterator = direction
-                # Set the key index as we turn around
-                self.key -= self.rotate_iterator
-                if self.key > 11:
-                    self.key = 0
-                if self.key < 0:
-                    self.key = 11
+            # Rollover range 0-11
+            self.key = abs(self.key % 12)
+            # Change the chord, too
+            self.chord_selection -= self.rotate_iterator
+            self.chord_selection = abs(self.chord_selection % 12)
 
-    def rotate_note(self, direction):
+    def rotate_chord(self, direction):
         # Set direction to 1 for clockwise rotation
         # Set direction to -1 for counterclockwise rotation
         # It's an integer of degrees added to the overall rotation
         # If this is called and there is no rotation currently, begin
         #   rotation immediately
-        if self.rotate_steps_note == 0:
-            self.rotate_steps_note = int(self.rotate_amount /
-                                         self.rotate_speedup)
-            self.rotate_iterator_note = direction
+        # TODO use a dict to track the whole wheel state and all rotate steps
+        if (self.rotate_steps_chord == 0) or \
+                (self.rotate_iterator_chord != direction):
+            self.rotate_steps_chord = int(self.rotate_amount /
+                                          self.rotate_speedup) \
+                                      - self.rotate_steps_chord
+            self.rotate_iterator_chord = direction
             # Set the selected note index as we turn around
-            self.note_selection += self.rotate_iterator_note
-            if self.note_selection == 6:
-                self.note_selection = 11
-                self.rotate_offset_note += 150
-            if self.note_selection == 10:
-                self.note_selection = 5
-                self.rotate_offset_note -= 150
-            if self.note_selection > 11:
-                self.note_selection = 0
-            if self.note_selection < 0:
-                self.note_selection = 11
-        else:
-            # If we receive a rotate call and are already rotating in that
-            #   direction, do nothing.
-            # Otherwise, if we receive a rotate call and it's for the opposite
-            #   direction, reverse the rotation immediately
-            if self.rotate_iterator_note != direction:
-                # Compensate for how far we've already been rotating
-                self.rotate_steps_note = int(self.rotate_amount /
-                                             self.rotate_speedup) - \
-                                    self.rotate_steps_note
-                # and reverse the rotation
-                self.rotate_iterator_note = direction
-                # Set the selected note index as we turn around
-                self.note_selection += self.rotate_iterator_note
-                if self.note_selection == 6:
-                    self.note_selection = 11
-                    self.rotate_offset_note += 150
-                if self.note_selection == 10:
-                    self.note_selection = 5
-                    self.rotate_offset_note -= 150
-                if self.note_selection > 11:
-                    self.note_selection = 0
-                if self.note_selection < 0:
-                    self.note_selection = 11
-        print("self.rotate_offset_note:", self.rotate_offset_note)
+            self.chord_position += self.rotate_iterator_chord
+            self.chord_position = abs(self.chord_position % 12)
+            if self.chord_position == 6:
+                self.chord_position = 11
+                self.rotate_offset_chord += 150
+            if self.chord_position == 10:
+                self.chord_position = 5
+                self.rotate_offset_chord -= 150
+            # Change the chord, too
+            self.chord_selection += self.rotate_iterator_chord
+            self.chord_selection = abs(self.chord_selection % 12)
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
         for event in events:
-            if event == "K_a":
+            if event == "key_clockwise":
                 self.rotate_wheel(1)
-            if event == "K_d":
+            if event == "key_counterclockwise":
                 self.rotate_wheel(-1)
-            if event == "K_q":
-                self.rotate_note(-1)
-            if event == "K_e":
-                self.rotate_note(1)
-            print("Key:", self.key, ", Note:", self.note_selection)
+            if event == "chord_clockwise":
+                self.rotate_chord(-1)
+            if event == "chord_counterclockwise":
+                self.rotate_chord(1)
+            print("Key:", self.notes[self.key]['noteName'],
+                  ", Mode root:", self.notes[self.chord_selection]['noteName'])
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
             self.rotate_offset += (self.rotate_iterator * self.rotate_speedup)
             self.rotate_steps -= 1
 
-        if self.rotate_steps_note > 0:
-            self.rotate_offset_note += (self.rotate_iterator_note *
-                                        self.rotate_speedup)
-            self.rotate_steps_note -= 1
+        if self.rotate_steps_chord > 0:
+            self.rotate_offset_chord += (self.rotate_iterator_chord *
+                                         self.rotate_speedup)
+            self.rotate_steps_chord -= 1
 
     def draw_control(self):
 
@@ -256,7 +259,7 @@ class WheelControl(ControlSystem):
                                   offset_degrees=self.rotate_offset,
                                   canvas_margin=self.canvas_margin,
                                   label_list=self.notes)
-        self.draw_label_circle(label_circle, self.notes)
+        self.draw_key_labels(label_circle, self.notes)
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:
@@ -301,16 +304,16 @@ class WheelControl(ControlSystem):
 
         for label in labels:  # The 4
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                    r=self.r - 170,
+                                    r=self.r - 200,
                                     slice_no=label,
                                     canvas_margin=self.canvas_margin)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             str(labels[label]["step"]),
-                            self.font_medium,
+                            self.font_medium_bold,
                             self.color_bg)
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                    r=self.r - 210,
+                                    r=self.r - 240,
                                     slice_no=label,
                                     canvas_margin=self.canvas_margin)
             self.draw_label(polygon.coordinates[1],
@@ -332,7 +335,7 @@ class WheelControl(ControlSystem):
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                 r=self.r - 126,
                                 slice_no=0,
-                                offset_degrees=self.rotate_offset_note,
+                                offset_degrees=self.rotate_offset_chord,
                                 canvas_margin=self.canvas_margin)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],

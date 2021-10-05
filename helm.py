@@ -7,14 +7,16 @@
 import pygame
 from pygame.locals import *
 from helm_controls import WheelControl
+from helm_controls import ChordControl
 
 # Griffin Powermate support for Linux systems only
 # Can't even install the downstream dependency evdev unless running linux,
 # part of the install process checks for kernel header files and so on.
-# If in linux, set to True and connect two Powermates for knob support
+# If in linux, set to True and connect a Powermate.  pip install pypowermate
 # Make sure to add the current, non-root UNIX user to the input group
-# in /etc/group, and then re-login.  Otherwise, permission errors
+# in /etc/group, and then re-login.  Otherwise: permission errors.
 using_griffin_powermate = False
+
 if using_griffin_powermate:
     from pypowermate import Powermate
 
@@ -27,18 +29,18 @@ class Helm:
 
         # Musical attributes
         self.notes = [
-            {'noteName': 'C', 'kbNum': 1, 'wheelPos': 1},
-            {'noteName': 'G', 'kbNum': 8, 'wheelPos': 2},
-            {'noteName': 'D', 'kbNum': 3, 'wheelPos': 3},
-            {'noteName': 'A', 'kbNum': 10, 'wheelPos': 4},
-            {'noteName': 'E', 'kbNum': 5, 'wheelPos': 5},
-            {'noteName': 'B', 'kbNum': 12, 'wheelPos': 6},
-            {'noteName': 'Gb/F#', 'kbNum': 7, 'wheelPos': 7},
-            {'noteName': 'Db/C#', 'kbNum': 2, 'wheelPos': 8},
-            {'noteName': 'Ab/G#', 'kbNum': 9, 'wheelPos': 9},
-            {'noteName': 'Eb/D#', 'kbNum': 4, 'wheelPos': 10},
-            {'noteName': 'Bb/A#', 'kbNum': 11, 'wheelPos': 11},
-            {'noteName': 'F', 'kbNum': 6, 'wheelPos': 12}
+            {'noteName': 'C', 'sharpName': 'C', 'kbNum': 1, 'wheelPos': 1},
+            {'noteName': 'G', 'sharpName': 'G', 'kbNum': 8, 'wheelPos': 2},
+            {'noteName': 'D', 'sharpName': 'D', 'kbNum': 3, 'wheelPos': 3},
+            {'noteName': 'A', 'sharpName': 'A', 'kbNum': 10, 'wheelPos': 4},
+            {'noteName': 'E', 'sharpName': 'E', 'kbNum': 5, 'wheelPos': 5},
+            {'noteName': 'B', 'sharpName': 'B', 'kbNum': 12, 'wheelPos': 6},
+            {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 7, 'wheelPos': 7},
+            {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 2, 'wheelPos': 8},
+            {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 9, 'wheelPos': 9},
+            {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 4, 'wheelPos': 10},
+            {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
+            {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
         ]
 
         # Graphics attributes
@@ -84,8 +86,9 @@ class Helm:
         # Fonts - very slow
         # Initialize a font.  This takes forever, like maybe 8 seconds.  But
         # happens once.
-        self.font_small = pygame.font.SysFont('courier', 24, bold=True)
+        self.font_small_bold = pygame.font.SysFont('courier', 24, bold=True)
         self.font_med = pygame.font.SysFont('courier', 32)
+        self.font_med_bold = pygame.font.SysFont('courier', 32, bold=True)
         self.font_x_large = pygame.font.SysFont('courier', 80)
         # Listing available fonts, fun for later:
         # fonts = pygame.font.get_fonts()
@@ -101,25 +104,51 @@ class Helm:
         # surface attribute will be blit to the canvas.
         self.controlSurfaces = []
 
+        # ffWheel (fourth/fifth wheel) handles keystrokes related to key,
+        #   mode root, and note selection around a circle of fifths.
+
         # The size of the ffWheel's surface will be __% of the screen
         control_ff_wheel_size = int(self.canvas_height * 0.98)
         # Create a ffWheel control.  Init.
         control_ff_wheel = WheelControl(control_ff_wheel_size,
-                                        control_ff_wheel_size,
-                                        # Size of this control's surface.
-                                        self.canvas_margin,  # render margin
+                                        self.canvas_margin,  # inner margin
                                         self.orange, self.black,
                                         # fg color and bg color
                                         self.orange_25,  # accent color
                                         self.notes,  # list of note values
                                         self.canvas_margin,
                                         self.canvas_margin,  # Blit location
-                                        self.font_small,
+                                        self.font_small_bold,
                                         self.font_med,
+                                        self.font_med_bold,
                                         self.font_x_large)
+
+        # control_chord handles keystrokes related to which chord notes
+        #   to trigger, such a major triad/etc.  It takes a wheelControl
+        #   argument to link up with the ffWheel and pass chord info
 
         # Append the ffWheel to the controlSurfaces list
         self.controlSurfaces.append(control_ff_wheel)
+
+        # The size of the control_chord surface will be __% of the screen
+        control_chord_size = int(self.canvas_width * 0.40)
+        # Create a chord control.  Init.
+        control_chord = ChordControl(control_chord_size,
+                                     self.canvas_margin,  # inner margin
+                                     self.orange, self.orange_25,
+                                     # fg color and bg color
+                                     self.orange_25,  # accent color
+                                     self.notes,  # list of note values
+                                     int(self.canvas_width / 2) + 130 +
+                                     self.canvas_margin,
+                                     self.canvas_margin + 30,  # Blit location
+                                     self.font_small_bold,
+                                     self.font_med,
+                                     self.font_med_bold,
+                                     self.font_x_large)
+
+        # Append the chord control to the controlSurfaces list
+        self.controlSurfaces.append(control_chord)
 
     def run(self):
         self.running = True
@@ -154,14 +183,19 @@ class Helm:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
-                    if event.key == pygame.K_a:
-                        events["K_a"] = True
-                    if event.key == pygame.K_d:
-                        events["K_d"] = True
+                    if event.key == pygame.K_COMMA:
+                        events["key_clockwise"] = True
+                    if event.key == pygame.K_PERIOD:
+                        events["key_counterclockwise"] = True
                     if event.key == pygame.K_q:
-                        events["K_q"] = True
+                        events["chord_clockwise"] = True
                     if event.key == pygame.K_e:
-                        events["K_e"] = True
+                        events["chord_counterclockwise"] = True
+                    if event.key == pygame.K_a:
+                        events["chord_majortriad_start"] = True
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_a:
+                        events["chord_majortriad_stop"] = True
 
             if using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
