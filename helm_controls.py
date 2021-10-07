@@ -1,4 +1,5 @@
 import pygame
+import sys
 from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice, \
                         ShapeNotesList
 
@@ -105,7 +106,6 @@ class ChordControl(ControlSystem):
                                   '1, 3, 5, 7, 9': (1, 5, 2, 6, 3),
                                   '1, 5, 7, 9, 11': (1, 2, 6, 3, 12)}
 
-
     def update_control(self, events):
         # Handle the dict of events passed in for this update
         for event in events:
@@ -117,13 +117,19 @@ class ChordControl(ControlSystem):
     def draw_squares(self, shape, color, width, chord_root, chord_def):
         coord_pair = 0
         for coordinates in shape.coordinates_boxes:
-            if int( (self.notes[coord_pair]['wheelPos'] -
-                     self.wheel_control.chord_selection
-                     )
-                  % 13 ) in chord_def:
+            # print("coord_pair:",coord_pair)
+            # print("self.notes[coord_pair]['wheelPos']:",self.notes[coord_pair]['wheelPos'])
+            # print("wheel_control.chord_selection:",self.wheel_control.chord_selection)
+            # print("chord_def:",chord_def)
+            if (
+                (abs(coord_pair - self.wheel_control.chord_selection) % 12)
+                + 1
+            ) in chord_def:
                 rect = pygame.Rect(coordinates)
                 pygame.draw.rect(self.surface, color, rect, width)
+                # print("* draw square on:",coord_pair)
             coord_pair += 1
+        # sys.exit()
 
     def draw_control(self):
         self.surface.fill(self.color_bg)
@@ -199,6 +205,8 @@ class WheelControl(ControlSystem):
                                     - self.rotate_steps
             self.rotate_iterator = direction
             # Set the key index as we turn around
+            # Subtract because of the rotating-disk mechanic, the newly chosen
+            # option is OPPOSITE direction of the disk turning
             self.key -= self.rotate_iterator
             # Rollover range 0-11
             self.key = abs(self.key % 12)
@@ -227,11 +235,11 @@ class WheelControl(ControlSystem):
             self.chord_selection = abs(self.chord_selection % 12)
             if self.chord_position == 6:
                 self.chord_position = 11
-                self.chord_selection = 11
+                self.chord_selection = abs((11 + self.key) % 12)
                 self.rotate_offset_chord += 150
             if self.chord_position == 10:
                 self.chord_position = 5
-                self.chord_selection = 5
+                self.chord_selection = abs((5 + self.key) % 12)
                 self.rotate_offset_chord -= 150
 
 
@@ -247,7 +255,9 @@ class WheelControl(ControlSystem):
             if event == "chord_counterclockwise":
                 self.rotate_chord(1)
             print("Key:", self.notes[self.key]['noteName'],
-                  ", Mode root:", self.notes[self.chord_selection]['noteName'])
+                  ", Mode root:", self.notes[self.chord_selection]['noteName'],
+                  ", self.key:", self.key,
+                  ", self.chord_selection:", self.chord_selection)
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
