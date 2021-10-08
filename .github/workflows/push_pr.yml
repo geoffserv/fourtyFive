@@ -14,7 +14,7 @@ on:
 
 # The file in this repo containing the test suite
 env:
-  testSuite: 'test_gfxTest.py'
+  testSuite: 'test_helm.py'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in
 #   parallel

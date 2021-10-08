@@ -1,4 +1,4 @@
-from gfxTest import *
+from helm import *
 
 
 def test_helm():
