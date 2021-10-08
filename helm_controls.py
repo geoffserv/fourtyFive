@@ -92,19 +92,29 @@ class ChordControl(ControlSystem):
              int(self.canvas_height + (self.canvas_margin * 2))))
 
         # For now, how intervals are defined:
+        # The 'slice number' around the circle of fifths
         # 1 = Root
         # 2 = Fifth
         # 3 = Second
         # 4 = Sixth
         # 5 = Third
         # 6 = Seventh
-        # 12 = Fourth
-        self.chord_definitions = {'1, 3, 5': (1, 5, 2),
-                                  '1, 3, 5, 6': (1, 5, 2, 4),
-                                  '1, 3, 5, 7': (1, 5, 2, 6),
-                                  '1, 3, 5, 9': (1, 5, 2, 3),
-                                  '1, 3, 5, 7, 9': (1, 5, 2, 6, 3),
-                                  '1, 5, 7, 9, 11': (1, 2, 6, 3, 12)}
+        # 7 = Fourth
+        self.chord_slices_dict = {1: 1,
+                                  2: 5,
+                                  3: 2,
+                                  4: 6,
+                                  5: 3,
+                                  6: 7,
+                                  7: 4}
+        self.chord_definitions = {'1, 3, 5': (1, 3, 5)
+                                  }
+        # self.chord_definitions = {'1, 3, 5': (1, 3, 5),
+        #                           '1, 3, 5, 6': (1, 3, 5, 6),
+        #                           '1, 3, 5, 7': (1, 3, 5, 7),
+        #                           '1, 3, 5, 9': (1, 3, 5, 2),
+        #                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
+        #                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
 
     def update_control(self, events):
         # Handle the dict of events passed in for this update
@@ -115,21 +125,41 @@ class ChordControl(ControlSystem):
                 print("major triad off. key:", self.key)
 
     def draw_squares(self, shape, color, width, chord_root, chord_def):
-        coord_pair = 0
-        for coordinates in shape.coordinates_boxes:
+        # IT'S ALL BAD
+        # coord_pair = 0
+        # for coordinates in shape.coordinates_boxes:
             # print("coord_pair:",coord_pair)
             # print("self.notes[coord_pair]['wheelPos']:",self.notes[coord_pair]['wheelPos'])
             # print("wheel_control.chord_selection:",self.wheel_control.chord_selection)
             # print("chord_def:",chord_def)
-            if (
-                (abs(coord_pair - self.wheel_control.chord_selection) % 12)
-                + 1
-            ) in chord_def:
-                rect = pygame.Rect(coordinates)
-                pygame.draw.rect(self.surface, color, rect, width)
-                # print("* draw square on:",coord_pair)
-            coord_pair += 1
+            # if (
+            #     (abs(coord_pair - self.wheel_control.chord_selection) % 12)
+            # ) in chord_def:
+            #     rect = pygame.Rect(coordinates)
+            #     pygame.draw.rect(self.surface, color, rect, width)
+            #     # print("* draw square on:",coord_pair)
+            # coord_pair += 1
         # sys.exit()
+        # Starting over
+        for i in range(7):
+            print("i:", i)
+            print("self.wheel_control.key:", self.wheel_control.key)
+            print("self.chord_slices_dict[i+1]:", self.chord_slices_dict[i+1])
+            print("chord_def:",chord_def)
+            if self.chord_slices_dict[i+1] in chord_def:
+                current_loc = i + self.wheel_control.chord_selection
+                print("self.wheel_control.chord_selection:", self.wheel_control.chord_selection)
+                print("current_loc:", current_loc)
+                # if (current_loc >= (6 + self.wheel_control.key)) and \
+                #         (current_loc < (11 + self.wheel_control.key)):
+                if (current_loc >= 6) and \
+                        (current_loc < 11):
+                    current_loc += 5
+                current_slice = (current_loc) % 12
+                print("current_slice:", current_slice)
+                rect = pygame.Rect(shape.coordinates_boxes[current_slice])
+                pygame.draw.rect(self.surface, color, rect, width)
+            # sys.exit()
 
     def draw_control(self):
         self.surface.fill(self.color_bg)
