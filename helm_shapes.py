@@ -1,17 +1,28 @@
 import math
 
 
-class ShapeNotesList(object):
-    def __init__(self, spacing_width, canvas_margin=10, line_spacing=0,
-                 left_margin=0):
-        self.spacing_width = spacing_width
+class Shape(object):
+    def __init__(self, canvas_margin=10, **kwargs):
         self.canvas_margin = canvas_margin
-        self.line_spacing = line_spacing
-        self.left_margin = left_margin
+
         # list of coordinates representing this shape
         self.coordinates = []
         self.degrees = []
         self.coordinates_boxes = []
+
+    def find_coordinates(self):
+        pass
+
+
+class ShapeNotesList(Shape):
+    def __init__(self, *args, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+        self.spacing_width = kwargs.get('spacing_width', 0)
+        self.line_spacing = kwargs.get('line_spacing', 0)
+        self.left_margin = kwargs.get('left_margin', 0)
+
         self.find_coordinates()
 
     def find_coordinates(self):
@@ -38,29 +49,28 @@ class ShapeNotesList(object):
             )
 
 
-class ShapeWheel(object):
-    def __init__(self, canvas_size, r, slice_no=1, offset_degrees=0,
-                 canvas_margin=10):
-        self.slice_no = int(slice_no)
-        self.r = int(r)
+# class ShapeWheel(object):
+#     def __init__(self, canvas_size, r, slice_no=1, offset_degrees=0):
+class ShapeWheel(Shape):
+    def __init__(self, *args, **kwargs):
+        # Run superclass __init__ to inherit all of those instance
+        # attributes
+        super(self.__class__, self).__init__(*args, **kwargs)
+
+        self.slice_no = kwargs.get('slice_no', 1)
+        self.r = kwargs.get('r', 100)
+        self.offset_degrees = kwargs.get('offset_degrees', 0)
+
         self.circle_divisions = 12  # 12-slices around the circle
-        self.offset_degrees = int(offset_degrees)
-        self.canvas_margin = int(canvas_margin)
-        self.origin_x = int(
-            (canvas_size / 2) + self.canvas_margin)  # Center of the canvas X
-        self.origin_y = int(
-            (canvas_size / 2) + self.canvas_margin)  # Center of the canvas Y
-        self.canvas_width = (canvas_size + (self.canvas_margin * 2))
-        self.canvas_height = (canvas_size + (self.canvas_margin * 2))
+        self.origin_x = self.r + self.canvas_margin  # Center of the canvas X
+        self.origin_y = self.r + self.canvas_margin  # Center of the canvas Y
+        self.canvas_width = ((self.r * 2) + (self.canvas_margin * 2))
+        self.canvas_height = ((self.r * 2) + (self.canvas_margin * 2))
 
         # offset_orientation is a number of degrees added to everything
         # to set an overall coordinate system orientation
         self.offset_orientation = 90
 
-        # list of coordinates representing this shape
-        self.coordinates = []
-        # associates list of degrees from the origin for each coordinate pair
-        self.degrees = []
         self.find_coordinates()
 
     def find_coordinates(self):

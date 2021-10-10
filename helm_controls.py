@@ -343,8 +343,7 @@ class WheelControl(ControlSystem):
 
         # Draw the reference circle
         # This uses self.rotate_offset, so it's a rotating layer
-        label_circle = ShapeWheel(canvas_size=self.r * 2,
-                                  r=self.r - 56,
+        label_circle = ShapeWheel(r=self.r - 56,
                                   slice_no=1,
                                   offset_degrees=self.rotate_offset,
                                   canvas_margin=self.canvas_margin)
