@@ -53,3 +53,12 @@ notes = [
     {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
     {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
 ]
+
+# Define some colors for convenience and readability
+color_black = (0, 0, 0)
+color_white = (255, 255, 255)
+color_red = (255, 0, 0)
+color_orange = (255, 94, 19)
+color_orange_25 = (64, 23, 4)
+color_orange_50 = (128, 47, 9)
+color_orange_75 = (191, 69, 13)

@@ -9,22 +9,30 @@ class ControlSystem(object):
 
     key = 0  # Key is the index of the notes dict indicating the key
 
-    def __init__(self, canvas_width, color,
-                 color_bg, color_accent, blit_x, blit_y, **kwargs):
+    def __init__(self, **kwargs):
 
-        self.surface = None
-        self.canvas_width = canvas_width
-        self.canvas_height = canvas_width  # 1:1 control canvas ratio default
-        self.color = color
-        self.color_bg = color_bg
-        self.color_accent = color_accent
+        # 1:1 control canvas ratio default
+        self.canvas_width = kwargs.get('canvas_size', 100)
+        self.canvas_height = kwargs.get('canvas_size', 100)
+
+        self.color = kwargs.get('color', helm_globals.color_orange)
+        self.color_bg = kwargs.get('color_bg', helm_globals.color_black)
+        self.color_accent = kwargs.get('color_accent',
+                                       helm_globals.color_orange_25)
+
+        # The X location in which this entire control
+        # should be blit to the screen canvas
+        self.blit_x = kwargs.get('blit_x', helm_globals.canvas_margin)
+
+        # The Y location in which this entire control
+        # should be blit to the screen canvas
+        self.blit_y = kwargs.get('blit_y', helm_globals.canvas_margin)
+
         # notes, their positions and values, etc
         self.chord_position = 0  # The currently selected note position
         self.chord_selection = 0  # Currently selected chord root note index
-        self.blit_x = blit_x  # The X location in which this entire control
-        # should be blit to the screen canvas
-        self.blit_y = blit_y  # The Y location in which this entire control
-        # should be blit to the screen canvas
+
+        self.surface = None
         self.surface = pygame.Surface(
             (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
@@ -74,9 +82,9 @@ class ControlSystem(object):
 
 
 class ChordControl(ControlSystem):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(self.__class__, self).__init__(**kwargs)
 
         # Reference to a wheelControl to get / set attributes
         self.wheel_control = kwargs.get('wheel_control', None)
@@ -182,9 +190,9 @@ class ChordControl(ControlSystem):
 
 
 class WheelControl(ControlSystem):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(self.__class__, self).__init__(**kwargs)
         self.r = int(self.canvas_height / 2)
         # rotate_offset tracks the overall rotation of the wheel in degrees
         # As the user rotates the wheel, this value is incremented/decremented

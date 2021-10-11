@@ -41,15 +41,6 @@ class Helm:
         self.r = int(
             (canvas_height * .8) / 2)  # R is half of __% of the screen
 
-        # Define some colors for convenience and readability
-        self.black = (0, 0, 0)
-        self.white = (255, 255, 255)
-        self.red = (255, 0, 0)
-        self.orange = (255, 94, 19)
-        self.orange_25 = (64, 23, 4)
-        self.orange_50 = (128, 47, 9)
-        self.orange_75 = (191, 69, 13)
-
         self.running = False  # will be True once self.run() is called
 
         # Initialize the canvas
@@ -86,12 +77,7 @@ class Helm:
         # The size of the ffWheel's surface will be __% of the screen
         control_ff_wheel_size = int(self.canvas_height * 0.98)
         # Create a ffWheel control.  Init.
-        control_ff_wheel = WheelControl(control_ff_wheel_size,
-                                        self.orange, self.black,
-                                        # fg color and bg color
-                                        self.orange_25,  # accent color
-                                        helm_globals.canvas_margin,  # Blit X
-                                        helm_globals.canvas_margin)  # Blit Y
+        control_ff_wheel = WheelControl(canvas_size=control_ff_wheel_size)
 
         # control_chord handles keystrokes related to which chord notes
         #   to trigger, such a major triad/etc.  It takes a wheelControl
@@ -103,13 +89,10 @@ class Helm:
         # The size of the control_chord surface will be __% of the screen
         control_chord_size = int(self.canvas_width * 0.40)
         # Create a chord control.  Init.
-        control_chord = ChordControl(control_chord_size,
-                                     self.orange, self.black,
-                                     # fg color and bg color
-                                     self.orange_25,  # accent color
-                                     int(self.canvas_width / 2) + 130 +
-                                     helm_globals.canvas_margin,  # Blit X
-                                     helm_globals.canvas_margin + 30,  # Blit Y
+        control_chord = ChordControl(canvas_size=control_chord_size,
+                                     blit_x=int(self.canvas_width / 2) + 130 +
+                                     helm_globals.canvas_margin,
+                                     blit_y=helm_globals.canvas_margin + 30,
                                      wheel_control=control_ff_wheel)
 
         # Append the chord control to the controlSurfaces list
@@ -118,7 +101,7 @@ class Helm:
     def run(self):
         self.running = True
 
-        self.canvas.fill(self.black)  # fill the screen with black
+        self.canvas.fill(helm_globals.color_black)
 
         # The main running loop
         while self.running:
