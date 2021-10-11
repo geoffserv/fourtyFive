@@ -6,41 +6,28 @@
 
 import pygame
 from pygame.locals import *
+
+import helm_fonts
 from helm_controls import WheelControl, ChordControl
+import helm_globals
 
-# Griffin Powermate support for Linux systems only
-# Can't even install the downstream dependency evdev unless running linux,
-# part of the install process checks for kernel header files and so on.
-# If in linux, set to True and connect a Powermate.  pip install pypowermate
-# Make sure to add the current, non-root UNIX user to the input group
-# in /etc/group, and then re-login.  Otherwise: permission errors.
-using_griffin_powermate = False
-
-if using_griffin_powermate:
+if helm_globals.using_griffin_powermate:
     from dqpypowermate import Powermate
+
 
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
 
         self.powermate = None
-        if using_griffin_powermate:
-            self.powermate = Powermate('/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00')
-
-        # Musical attributes
-        self.notes = [
-            {'noteName': 'C', 'sharpName': 'C', 'kbNum': 1, 'wheelPos': 1},
-            {'noteName': 'G', 'sharpName': 'G', 'kbNum': 8, 'wheelPos': 2},
-            {'noteName': 'D', 'sharpName': 'D', 'kbNum': 3, 'wheelPos': 3},
-            {'noteName': 'A', 'sharpName': 'A', 'kbNum': 10, 'wheelPos': 4},
-            {'noteName': 'E', 'sharpName': 'E', 'kbNum': 5, 'wheelPos': 5},
-            {'noteName': 'B', 'sharpName': 'B', 'kbNum': 12, 'wheelPos': 6},
-            {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 7, 'wheelPos': 7},
-            {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 2, 'wheelPos': 8},
-            {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 9, 'wheelPos': 9},
-            {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 4, 'wheelPos': 10},
-            {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
-            {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
-        ]
+        if helm_globals.using_griffin_powermate:
+            powermate_path = "/dev/input/by-id/usb"
+            powermate_path += "-"
+            powermate_path += "Griffin_Technology__Inc."
+            powermate_path += "_"
+            powermate_path += "Griffin_PowerMate"
+            powermate_path += "-"
+            powermate_path += "event-if00"
+            self.powermate = Powermate(powermate_path)
 
         # Graphics attributes
         # Clock, for tracking events and frame rate
@@ -53,21 +40,14 @@ class Helm:
 
         self.r = int(
             (canvas_height * .8) / 2)  # R is half of __% of the screen
-        self.canvas_margin = 10
-
-        # Define some colors for convenience and readability
-        self.black = (0, 0, 0)
-        self.white = (255, 255, 255)
-        self.red = (255, 0, 0)
-        self.orange = (255, 94, 19)
-        self.orange_25 = (64, 23, 4)
-        self.orange_50 = (128, 47, 9)
-        self.orange_75 = (191, 69, 13)
 
         self.running = False  # will be True once self.run() is called
 
         # Initialize the canvas
         pygame.init()
+
+        # Initialize the fonts
+        helm_fonts.init_fonts()
 
         if init_gfx:
             # If this is being run headless, turn initGfx to False
@@ -81,18 +61,6 @@ class Helm:
                 self.canvas = pygame.display.set_mode(
                     [self.canvas_width, self.canvas_height])
             pygame.display.set_caption('helm')  # Set the window title for fun
-
-        # Fonts - very slow
-        # Initialize a font.  This takes forever, like maybe 8 seconds.  But
-        # happens once.
-        self.font_small_bold = pygame.font.SysFont('courier', 24, bold=True)
-        self.font_med = pygame.font.SysFont('courier', 32)
-        self.font_med_bold = pygame.font.SysFont('courier', 32, bold=True)
-        self.font_x_large = pygame.font.SysFont('courier', 80)
-        # Listing available fonts, fun for later:
-        # fonts = pygame.font.get_fonts()
-        # for f in fonts:
-    	#     print(f)
 
         # controlSurfaces list contains each controlSystem object that is
         # rendered.
@@ -109,18 +77,7 @@ class Helm:
         # The size of the ffWheel's surface will be __% of the screen
         control_ff_wheel_size = int(self.canvas_height * 0.98)
         # Create a ffWheel control.  Init.
-        control_ff_wheel = WheelControl(control_ff_wheel_size,
-                                        self.canvas_margin,  # inner margin
-                                        self.orange, self.black,
-                                        # fg color and bg color
-                                        self.orange_25,  # accent color
-                                        self.notes,  # list of note values
-                                        self.canvas_margin,
-                                        self.canvas_margin,  # Blit location
-                                        self.font_small_bold,
-                                        self.font_med,
-                                        self.font_med_bold,
-                                        self.font_x_large)
+        control_ff_wheel = WheelControl(canvas_size=control_ff_wheel_size)
 
         # control_chord handles keystrokes related to which chord notes
         #   to trigger, such a major triad/etc.  It takes a wheelControl
@@ -132,20 +89,10 @@ class Helm:
         # The size of the control_chord surface will be __% of the screen
         control_chord_size = int(self.canvas_width * 0.40)
         # Create a chord control.  Init.
-        control_chord = ChordControl(control_chord_size,
-                                     self.canvas_margin,  # inner margin
-                                     self.orange, self.black,
-                                     # fg color and bg color
-                                     self.orange_25,  # accent color
-                                     self.notes,  # list of note values
-                                     int(self.canvas_width / 2) + 130 +
-                                     self.canvas_margin,
-                                     self.canvas_margin + 30,  # Blit location
-                                     self.font_small_bold,
-                                     self.font_med,
-                                     self.font_med_bold,
-                                     self.font_x_large,
-                                     wheel_control=control_ff_wheel)
+        control_chord = ChordControl(canvas_size=control_chord_size,
+                                     blit_x=int(self.canvas_width / 2) + 130 +
+                                     helm_globals.canvas_margin,
+                                     blit_y=helm_globals.canvas_margin + 30)
 
         # Append the chord control to the controlSurfaces list
         self.controlSurfaces.append(control_chord)
@@ -153,23 +100,32 @@ class Helm:
     def run(self):
         self.running = True
 
-        self.canvas.fill(self.black)  # fill the screen with black
+        self.canvas.fill(helm_globals.color_black)
 
         # The main running loop
         while self.running:
 
-            # First, draw the screen:
-            # Loop through each controlSystem added to the controlSurfaces list
-            for controlSurface in self.controlSurfaces:
-                # The drawControl method should update the control's visual
-                # elements and
-                # draw to the control's surface
-                controlSurface.draw_control()
-                # Blit the control's surface to the canvas
-                self.canvas.blit(controlSurface.surface,
-                                 [controlSurface.blit_x,
-                                  controlSurface.blit_y])
-            pygame.display.update()
+            # Drawing is expensive.
+            # Poll all of the control surfaces and see if
+            # Anyone needs a re-draw
+            needs_rendering = False
+            for control_surface in self.controlSurfaces:
+                if control_surface.needs_rendering:
+                    needs_rendering = True
+
+            if needs_rendering:
+                # First, draw the screen:
+                # Loop through each controlSystem added to the controlSurfaces list
+                for controlSurface in self.controlSurfaces:
+                    # The drawControl method should update the control's visual
+                    # elements and
+                    # draw to the control's surface
+                    controlSurface.draw_control()
+                    # Blit the control's surface to the canvas
+                    self.canvas.blit(controlSurface.surface,
+                                     [controlSurface.blit_x,
+                                      controlSurface.blit_y])
+                pygame.display.update()
 
             # Next, Update controls and everything in preparation for the
             # next loop through:
@@ -197,7 +153,7 @@ class Helm:
                     if event.key == pygame.K_a:
                         events["chord_majortriad_stop"] = True
 
-            if using_griffin_powermate:
+            if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
                 if event:
                     if event[2] == 1:
