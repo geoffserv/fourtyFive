@@ -54,6 +54,38 @@ notes = [
     {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
 ]
 
+key = 0  # Key is the index of the notes dict indicating the key
+
+# notes, their positions and values, etc
+chord_position = 0  # The currently selected note position on the circle
+
+chord_selection = 0  # Currently selected chord root note index
+
+# For now, how intervals are defined:
+# The 'slice number' around the circle of fifths
+# 1 = Root
+# 2 = Fifth
+# 3 = Second
+# 4 = Sixth
+# 5 = Third
+# 6 = Seventh
+# 7 = Fourth
+chord_slices_dict = {1: 1,
+                          2: 5,
+                          3: 2,
+                          4: 6,
+                          5: 3,
+                          6: 7,
+                          7: 4}
+chord_definitions = {'1, 3, 5': (1, 3, 5)
+                          }
+# self.chord_definitions = {'1, 3, 5': (1, 3, 5),
+#                           '1, 3, 5, 6': (1, 3, 5, 6),
+#                           '1, 3, 5, 7': (1, 3, 5, 7),
+#                           '1, 3, 5, 9': (1, 3, 5, 2),
+#                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
+#                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
+
 # Define some colors for convenience and readability
 color_black = (0, 0, 0)
 color_white = (255, 255, 255)

@@ -7,8 +7,6 @@ import helm_fonts
 
 class ControlSystem(object):
 
-    key = 0  # Key is the index of the notes dict indicating the key
-
     def __init__(self, **kwargs):
 
         # 1:1 control canvas ratio default
@@ -27,10 +25,6 @@ class ControlSystem(object):
         # The Y location in which this entire control
         # should be blit to the screen canvas
         self.blit_y = kwargs.get('blit_y', helm_globals.canvas_margin)
-
-        # notes, their positions and values, etc
-        self.chord_position = 0  # The currently selected note position
-        self.chord_selection = 0  # Currently selected chord root note index
 
         self.surface = None
         self.surface = pygame.Surface(
@@ -86,45 +80,18 @@ class ChordControl(ControlSystem):
         # Run superclass __init__ to inherit all of those instance attributes
         super(self.__class__, self).__init__(**kwargs)
 
-        # Reference to a wheelControl to get / set attributes
-        self.wheel_control = kwargs.get('wheel_control', None)
         self.canvas_height = 400
         self.surface = pygame.Surface(
             (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
 
-        # For now, how intervals are defined:
-        # The 'slice number' around the circle of fifths
-        # 1 = Root
-        # 2 = Fifth
-        # 3 = Second
-        # 4 = Sixth
-        # 5 = Third
-        # 6 = Seventh
-        # 7 = Fourth
-        self.chord_slices_dict = {1: 1,
-                                  2: 5,
-                                  3: 2,
-                                  4: 6,
-                                  5: 3,
-                                  6: 7,
-                                  7: 4}
-        self.chord_definitions = {'1, 3, 5': (1, 3, 5)
-                                  }
-        # self.chord_definitions = {'1, 3, 5': (1, 3, 5),
-        #                           '1, 3, 5, 6': (1, 3, 5, 6),
-        #                           '1, 3, 5, 7': (1, 3, 5, 7),
-        #                           '1, 3, 5, 9': (1, 3, 5, 2),
-        #                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
-        #                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
-
     def update_control(self, events):
         # Handle the dict of events passed in for this update
         for event in events:
             if event == "chord_majortriad_start":
-                print("major triad on. key:", self.key)
+                print("major triad on. key:", helm_globals.key)
             if event == "chord_majortriad_stop":
-                print("major triad off. key:", self.key)
+                print("major triad off. key:", helm_globals.key)
 
     def draw_squares(self, shape, color, width, chord_root, chord_def):
         # IT'S ALL BAD
@@ -172,15 +139,15 @@ class ChordControl(ControlSystem):
         self.surface.fill(self.color_bg)
 
         line_spacing = 0
-        for chord_def in self.chord_definitions:
+        for chord_def in helm_globals.chord_definitions:
             line_coords = ShapeNotesList(spacing_width=44,
                                          line_spacing=line_spacing,
                                          left_margin=226)
             self.draw_squares(line_coords, self.color, 1,
-                              self.wheel_control.chord_selection,
-                              self.chord_definitions[chord_def])
+                              helm_globals.chord_selection,
+                              helm_globals.chord_definitions[chord_def])
             self.draw_key_labels(line_coords, helm_globals.notes,
-                                 self.wheel_control.key)
+                                 helm_globals.key)
             self.draw_label((line_coords.coordinates[0][0]-168,
                              line_coords.coordinates[0][1]),
                             0,
@@ -243,12 +210,13 @@ class WheelControl(ControlSystem):
             # Set the key index as we turn around
             # Subtract because of the rotating-disk mechanic, the newly chosen
             # option is OPPOSITE direction of the disk turning
-            self.key -= self.rotate_iterator
+            helm_globals.key -= self.rotate_iterator
             # Rollover range 0-11
-            self.key = abs(self.key % 12)
+            helm_globals.key = abs(helm_globals.key % 12)
             # Change the chord, too
-            self.chord_selection -= self.rotate_iterator
-            self.chord_selection = abs(self.chord_selection % 12)
+            helm_globals.chord_selection -= self.rotate_iterator
+            helm_globals.chord_selection = abs(helm_globals.chord_selection
+                                               % 12)
 
     def rotate_chord(self, direction):
         # Set direction to 1 for clockwise rotation
@@ -264,18 +232,22 @@ class WheelControl(ControlSystem):
                                       - self.rotate_steps_chord
             self.rotate_iterator_chord = direction
             # Set the selected note index as we turn around
-            self.chord_position += self.rotate_iterator_chord
-            self.chord_position = abs(self.chord_position % 12)
+            helm_globals.chord_position += self.rotate_iterator_chord
+            helm_globals.chord_position = abs(helm_globals.chord_position
+                                              % 12)
             # Change the chord, too
-            self.chord_selection += self.rotate_iterator_chord
-            self.chord_selection = abs(self.chord_selection % 12)
-            if self.chord_position == 6:
-                self.chord_position = 11
-                self.chord_selection = abs((11 + self.key) % 12)
+            helm_globals.chord_selection += self.rotate_iterator_chord
+            helm_globals.chord_selection = abs(helm_globals.chord_selection
+                                               % 12)
+            if helm_globals.chord_position == 6:
+                helm_globals.chord_position = 11
+                helm_globals.chord_selection = abs((11 + helm_globals.key)
+                                                   % 12)
                 self.rotate_offset_chord += 150
-            if self.chord_position == 10:
-                self.chord_position = 5
-                self.chord_selection = abs((5 + self.key) % 12)
+            if helm_globals.chord_position == 10:
+                helm_globals.chord_position = 5
+                helm_globals.chord_selection = abs((5 + helm_globals.key)
+                                                   % 12)
                 self.rotate_offset_chord -= 150
 
     def update_control(self, events):
@@ -289,11 +261,14 @@ class WheelControl(ControlSystem):
                 self.rotate_chord(-1)
             if event == "chord_counterclockwise":
                 self.rotate_chord(1)
-            print("Key:", helm_globals.notes[self.key]['noteName'],
-                  ", Mode root:", helm_globals.notes[self.chord_selection]
+            print("Key:", helm_globals.notes[helm_globals.key]['noteName'],
+                  ", Mode root:",
+                  helm_globals.notes[helm_globals.chord_selection]
                   ['noteName'],
-                  ", self.key:", self.key,
-                  ", self.chord_selection:", self.chord_selection)
+                  ", helm_globals.key:",
+                  helm_globals.key,
+                  ", helm_globals.chord_selection:",
+                  helm_globals.chord_selection)
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
@@ -349,7 +324,8 @@ class WheelControl(ControlSystem):
         label_circle = ShapeWheel(canvas_size=self.r * 2,
                                   r=self.r - 56,
                                   offset_degrees=self.rotate_offset)
-        self.draw_key_labels(label_circle, helm_globals.notes, self.key)
+        self.draw_key_labels(label_circle, helm_globals.notes,
+                             helm_globals.key)
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:

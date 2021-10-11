@@ -92,8 +92,7 @@ class Helm:
         control_chord = ChordControl(canvas_size=control_chord_size,
                                      blit_x=int(self.canvas_width / 2) + 130 +
                                      helm_globals.canvas_margin,
-                                     blit_y=helm_globals.canvas_margin + 30,
-                                     wheel_control=control_ff_wheel)
+                                     blit_y=helm_globals.canvas_margin + 30)
 
         # Append the chord control to the controlSurfaces list
         self.controlSurfaces.append(control_chord)
