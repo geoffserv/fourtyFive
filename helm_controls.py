@@ -10,7 +10,7 @@ class ControlSystem(object):
     key = 0  # Key is the index of the notes dict indicating the key
 
     def __init__(self, canvas_width, color,
-                 color_bg, color_accent, notes, blit_x, blit_y, **kwargs):
+                 color_bg, color_accent, blit_x, blit_y, **kwargs):
 
         self.surface = None
         self.canvas_width = canvas_width
@@ -18,7 +18,6 @@ class ControlSystem(object):
         self.color = color
         self.color_bg = color_bg
         self.color_accent = color_accent
-        self.notes = notes  # Holds the dict/lists representing the scale
         # notes, their positions and values, etc
         self.chord_position = 0  # The currently selected note position
         self.chord_selection = 0  # Currently selected chord root note index
@@ -172,7 +171,7 @@ class ChordControl(ControlSystem):
             self.draw_squares(line_coords, self.color, 1,
                               self.wheel_control.chord_selection,
                               self.chord_definitions[chord_def])
-            self.draw_key_labels(line_coords, self.notes,
+            self.draw_key_labels(line_coords, helm_globals.notes,
                                  self.wheel_control.key)
             self.draw_label((line_coords.coordinates[0][0]-168,
                              line_coords.coordinates[0][1]),
@@ -282,8 +281,9 @@ class WheelControl(ControlSystem):
                 self.rotate_chord(-1)
             if event == "chord_counterclockwise":
                 self.rotate_chord(1)
-            print("Key:", self.notes[self.key]['noteName'],
-                  ", Mode root:", self.notes[self.chord_selection]['noteName'],
+            print("Key:", helm_globals.notes[self.key]['noteName'],
+                  ", Mode root:", helm_globals.notes[self.chord_selection]
+                  ['noteName'],
                   ", self.key:", self.key,
                   ", self.chord_selection:", self.chord_selection)
 
@@ -341,7 +341,7 @@ class WheelControl(ControlSystem):
         label_circle = ShapeWheel(canvas_size=self.r * 2,
                                   r=self.r - 56,
                                   offset_degrees=self.rotate_offset)
-        self.draw_key_labels(label_circle, self.notes, self.key)
+        self.draw_key_labels(label_circle, helm_globals.notes, self.key)
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:

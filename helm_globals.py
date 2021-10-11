@@ -37,3 +37,19 @@ note_wheel_labels = {11: {"step": 4,
                          "triad": "dim",
                          "mode": "Locrian"},
                      }
+
+# Musical attributes
+notes = [
+    {'noteName': 'C', 'sharpName': 'C', 'kbNum': 1, 'wheelPos': 1},
+    {'noteName': 'G', 'sharpName': 'G', 'kbNum': 8, 'wheelPos': 2},
+    {'noteName': 'D', 'sharpName': 'D', 'kbNum': 3, 'wheelPos': 3},
+    {'noteName': 'A', 'sharpName': 'A', 'kbNum': 10, 'wheelPos': 4},
+    {'noteName': 'E', 'sharpName': 'E', 'kbNum': 5, 'wheelPos': 5},
+    {'noteName': 'B', 'sharpName': 'B', 'kbNum': 12, 'wheelPos': 6},
+    {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 7, 'wheelPos': 7},
+    {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 2, 'wheelPos': 8},
+    {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 9, 'wheelPos': 9},
+    {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 4, 'wheelPos': 10},
+    {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
+    {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
+]

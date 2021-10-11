@@ -20,23 +20,14 @@ class Helm:
 
         self.powermate = None
         if helm_globals.using_griffin_powermate:
-            self.powermate = Powermate('/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00')
-
-        # Musical attributes
-        self.notes = [
-            {'noteName': 'C', 'sharpName': 'C', 'kbNum': 1, 'wheelPos': 1},
-            {'noteName': 'G', 'sharpName': 'G', 'kbNum': 8, 'wheelPos': 2},
-            {'noteName': 'D', 'sharpName': 'D', 'kbNum': 3, 'wheelPos': 3},
-            {'noteName': 'A', 'sharpName': 'A', 'kbNum': 10, 'wheelPos': 4},
-            {'noteName': 'E', 'sharpName': 'E', 'kbNum': 5, 'wheelPos': 5},
-            {'noteName': 'B', 'sharpName': 'B', 'kbNum': 12, 'wheelPos': 6},
-            {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 7, 'wheelPos': 7},
-            {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 2, 'wheelPos': 8},
-            {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 9, 'wheelPos': 9},
-            {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 4, 'wheelPos': 10},
-            {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
-            {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
-        ]
+            powermate_path = "/dev/input/by-id/usb"
+            powermate_path += "-"
+            powermate_path += "Griffin_Technology__Inc."
+            powermate_path += "_"
+            powermate_path += "Griffin_PowerMate"
+            powermate_path += "-"
+            powermate_path += "event-if00"
+            self.powermate = Powermate(powermate_path)
 
         # Graphics attributes
         # Clock, for tracking events and frame rate
@@ -99,7 +90,6 @@ class Helm:
                                         self.orange, self.black,
                                         # fg color and bg color
                                         self.orange_25,  # accent color
-                                        self.notes,  # list of note values
                                         helm_globals.canvas_margin,  # Blit X
                                         helm_globals.canvas_margin)  # Blit Y
 
@@ -117,7 +107,6 @@ class Helm:
                                      self.orange, self.black,
                                      # fg color and bg color
                                      self.orange_25,  # accent color
-                                     self.notes,  # list of note values
                                      int(self.canvas_width / 2) + 130 +
                                      helm_globals.canvas_margin,  # Blit X
                                      helm_globals.canvas_margin + 30,  # Blit Y
