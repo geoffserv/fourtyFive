@@ -26,10 +26,6 @@ class Shape(object):
         self.origin_x = int(self.canvas_size / 2) + helm_globals.canvas_margin
         # Center of the canvas Y
         self.origin_y = int(self.canvas_size / 2) + helm_globals.canvas_margin
-        # self.canvas_width = (self.canvas_size +
-        #                      (helm_globals.canvas_margin * 2))
-        # self.canvas_height = (self.canvas_size +
-        #                       (helm_globals.canvas_margin * 2))
         self.circle_divisions = 12  # 12-slices around the circle
         # slice_no for specifying a pizza-like division of a circle
         self.slice_no = kwargs.get('slice_no', 1)
@@ -39,21 +35,18 @@ class Shape(object):
         # offset_degrees for tracking a # of degrees shape rotation
         self.offset_degrees = kwargs.get('offset_degrees', 0)
 
-    def find_coordinates(self):
-        pass
-
-
-class ShapeNotesList(Shape):
-    def __init__(self, **kwargs):
-        # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(**kwargs)
-
+        # Spacing and margins for list shapes
         self.spacing_width = kwargs.get('spacing_width', 0)
         self.line_spacing = kwargs.get('line_spacing', 0)
         self.left_margin = kwargs.get('left_margin', 0)
 
         self.find_coordinates()
 
+    def find_coordinates(self):
+        pass
+
+
+class ShapeNotesList(Shape):
     def find_coordinates(self):
         for i in range(1, 13):
             self.coordinates.append(
@@ -80,12 +73,6 @@ class ShapeNotesList(Shape):
 
 
 class ShapeWheel(Shape):
-    def __init__(self, **kwargs):
-        # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(**kwargs)
-
-        self.find_coordinates()
-
     def find_coordinates(self):
         for i in range(12):
             self.coordinates.append(
@@ -121,12 +108,6 @@ class ShapeWheel(Shape):
 
 
 class ShapeWheelSlice(Shape):
-    def __init__(self, **kwargs):
-        # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(**kwargs)
-
-        self.find_coordinates()
-
     def find_coordinates(self):
         self.coordinates.append(  # Origin
             (
@@ -195,12 +176,6 @@ class ShapeWheelSlice(Shape):
 
 
 class ShapeWheelRay(Shape):
-    def __init__(self, **kwargs):
-        # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(**kwargs)
-
-        self.find_coordinates()
-
     def find_coordinates(self):
         self.coordinates.append(  # Origin
             (

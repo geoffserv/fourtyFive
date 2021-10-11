@@ -6,15 +6,13 @@
 
 import pygame
 from pygame.locals import *
+
+import helm_fonts
 from helm_controls import WheelControl, ChordControl
 import helm_globals
 
-
 if helm_globals.using_griffin_powermate:
     from dqpypowermate import Powermate
-
-
-
 
 
 class Helm:
@@ -66,6 +64,9 @@ class Helm:
         # Initialize the canvas
         pygame.init()
 
+        # Initialize the fonts
+        helm_fonts.init_fonts()
+
         if init_gfx:
             # If this is being run headless, turn initGfx to False
             # This is useful for headless CI testing
@@ -78,18 +79,6 @@ class Helm:
                 self.canvas = pygame.display.set_mode(
                     [self.canvas_width, self.canvas_height])
             pygame.display.set_caption('helm')  # Set the window title for fun
-
-        # Fonts - very slow
-        # Initialize a font.  This takes forever, like maybe 8 seconds.  But
-        # happens once.
-        self.font_small_bold = pygame.font.SysFont('courier', 24, bold=True)
-        self.font_med = pygame.font.SysFont('courier', 32)
-        self.font_med_bold = pygame.font.SysFont('courier', 32, bold=True)
-        self.font_x_large = pygame.font.SysFont('courier', 80)
-        # Listing available fonts, fun for later:
-        # fonts = pygame.font.get_fonts()
-        # for f in fonts:
-        #     print(f)
 
         # controlSurfaces list contains each controlSystem object that is
         # rendered.
@@ -112,11 +101,7 @@ class Helm:
                                         self.orange_25,  # accent color
                                         self.notes,  # list of note values
                                         helm_globals.canvas_margin,  # Blit X
-                                        helm_globals.canvas_margin,  # Blit Y
-                                        self.font_small_bold,
-                                        self.font_med,
-                                        self.font_med_bold,
-                                        self.font_x_large)
+                                        helm_globals.canvas_margin)  # Blit Y
 
         # control_chord handles keystrokes related to which chord notes
         #   to trigger, such a major triad/etc.  It takes a wheelControl
@@ -136,10 +121,6 @@ class Helm:
                                      int(self.canvas_width / 2) + 130 +
                                      helm_globals.canvas_margin,  # Blit X
                                      helm_globals.canvas_margin + 30,  # Blit Y
-                                     self.font_small_bold,
-                                     self.font_med,
-                                     self.font_med_bold,
-                                     self.font_x_large,
                                      wheel_control=control_ff_wheel)
 
         # Append the chord control to the controlSurfaces list

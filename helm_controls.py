@@ -2,6 +2,7 @@ import pygame
 from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice, \
                         ShapeNotesList
 import helm_globals
+import helm_fonts
 
 
 class ControlSystem(object):
@@ -9,9 +10,7 @@ class ControlSystem(object):
     key = 0  # Key is the index of the notes dict indicating the key
 
     def __init__(self, canvas_width, color,
-                 color_bg, color_accent, notes, blit_x, blit_y, font_small,
-                 font_medium, font_medium_bold, font_x_large,
-                 wheel_control=None):
+                 color_bg, color_accent, notes, blit_x, blit_y, **kwargs):
 
         self.surface = None
         self.canvas_width = canvas_width
@@ -27,10 +26,6 @@ class ControlSystem(object):
         # should be blit to the screen canvas
         self.blit_y = blit_y  # The Y location in which this entire control
         # should be blit to the screen canvas
-        self.font_small = font_small
-        self.font_medium = font_medium  # Medium sized font
-        self.font_medium_bold = font_medium_bold
-        self.font_x_large = font_x_large  # XL sized font
         self.surface = pygame.Surface(
             (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
@@ -52,9 +47,9 @@ class ControlSystem(object):
             else:
                 note_label = labels[coord_pair]['noteName']
             if key == coord_pair:
-                font = self.font_medium_bold
+                font = helm_fonts.font['medium_bold']
             else:
-                font = self.font_medium
+                font = helm_fonts.font['medium']
             self.draw_label(coordinates,
                             shape.degrees[coord_pair],
                             note_label,
@@ -183,7 +178,7 @@ class ChordControl(ControlSystem):
                              line_coords.coordinates[0][1]),
                             0,
                             chord_def,
-                            self.font_small, self.color)
+                            helm_fonts.font['small_bold'], self.color)
             line_spacing += 60
 
 
@@ -318,7 +313,7 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "Key",
-                            self.font_medium,
+                            helm_fonts.font['medium'],
                             self.color)
 
         # Labels for directions
@@ -329,7 +324,7 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "5ths >",
-                            self.font_medium,
+                            helm_fonts.font['medium'],
                             self.color_accent)
         for i in [11]:  # Wheel position 11
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
@@ -338,7 +333,7 @@ class WheelControl(ControlSystem):
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "< 4ths",
-                            self.font_medium,
+                            helm_fonts.font['medium'],
                             self.color_accent)
 
         # Draw the reference circle
@@ -372,7 +367,7 @@ class WheelControl(ControlSystem):
                             polygon.degrees[0],
                             str(helm_globals.note_wheel_labels[label]
                                 ["step"]),
-                            self.font_medium_bold,
+                            helm_fonts.font['medium_bold'],
                             self.color_bg)
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 240,
@@ -381,7 +376,7 @@ class WheelControl(ControlSystem):
                             polygon.degrees[0],
                             str(helm_globals.note_wheel_labels[label]
                                 ["triad"]),
-                            self.font_small,
+                            helm_fonts.font['small_bold'],
                             self.color_bg)
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 365,
@@ -390,7 +385,7 @@ class WheelControl(ControlSystem):
                             polygon.degrees[0]+90,
                             str(helm_globals.note_wheel_labels[label]
                                 ["mode"]),
-                            self.font_small,
+                            helm_fonts.font['small_bold'],
                             self.color_bg)
 
         # Draw the selected note indicator
@@ -400,6 +395,6 @@ class WheelControl(ControlSystem):
                                 offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
-                        "^",
-                        self.font_x_large,
+                        "↑",
+                        helm_fonts.font['x_large'],
                         self.color)
