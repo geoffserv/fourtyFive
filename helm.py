@@ -105,18 +105,27 @@ class Helm:
         # The main running loop
         while self.running:
 
-            # First, draw the screen:
-            # Loop through each controlSystem added to the controlSurfaces list
-            for controlSurface in self.controlSurfaces:
-                # The drawControl method should update the control's visual
-                # elements and
-                # draw to the control's surface
-                controlSurface.draw_control()
-                # Blit the control's surface to the canvas
-                self.canvas.blit(controlSurface.surface,
-                                 [controlSurface.blit_x,
-                                  controlSurface.blit_y])
-            pygame.display.update()
+            # Drawing is expensive.
+            # Poll all of the control surfaces and see if
+            # Anyone needs a re-draw
+            needs_rendering = False
+            for control_surface in self.controlSurfaces:
+                if control_surface.needs_rendering:
+                    needs_rendering = True
+
+            if needs_rendering:
+                # First, draw the screen:
+                # Loop through each controlSystem added to the controlSurfaces list
+                for controlSurface in self.controlSurfaces:
+                    # The drawControl method should update the control's visual
+                    # elements and
+                    # draw to the control's surface
+                    controlSurface.draw_control()
+                    # Blit the control's surface to the canvas
+                    self.canvas.blit(controlSurface.surface,
+                                     [controlSurface.blit_x,
+                                      controlSurface.blit_y])
+                pygame.display.update()
 
             # Next, Update controls and everything in preparation for the
             # next loop through:

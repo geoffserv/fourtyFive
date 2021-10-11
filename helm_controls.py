@@ -8,6 +8,7 @@ import helm_fonts
 class ControlSystem(object):
 
     def __init__(self, **kwargs):
+        # Informal interface for a ControlSystem
 
         # 1:1 control canvas ratio default
         self.canvas_width = kwargs.get('canvas_size', 100)
@@ -30,6 +31,17 @@ class ControlSystem(object):
         self.surface = pygame.Surface(
             (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
+
+        # If this is true for this control system, the screen will be
+        # re-rendered.
+        # This will be set to False at the beginning of every execution of the
+        #   update_control method.
+        # Then, during execution of the update_control method, it will be set
+        #   to True if some change is detected which requires a re-render.
+        # As we come back around in the main loop, if True is detected here,
+        # Everyone gets redrawn.
+        # For now, set to True so we get an initial render.
+        self.needs_rendering = True
 
     def init_surface(self):
         pass
@@ -86,11 +98,14 @@ class ChordControl(ControlSystem):
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
 
     def update_control(self, events):
+        self.needs_rendering = False
         # Handle the dict of events passed in for this update
         for event in events:
             if event == "chord_majortriad_start":
+                self.needs_rendering = True
                 print("major triad on. key:", helm_globals.key)
             if event == "chord_majortriad_stop":
+                self.needs_rendering = True
                 print("major triad off. key:", helm_globals.key)
 
     def draw_squares(self, shape, color, width, chord_root, chord_def):
@@ -251,6 +266,8 @@ class WheelControl(ControlSystem):
                 self.rotate_offset_chord -= 150
 
     def update_control(self, events):
+        self.needs_rendering = False
+
         # Handle the dict of events passed in for this update
         for event in events:
             if event == "key_clockwise":
@@ -272,10 +289,12 @@ class WheelControl(ControlSystem):
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
+            self.needs_rendering = True
             self.rotate_offset += (self.rotate_iterator * self.rotate_speedup)
             self.rotate_steps -= 1
 
         if self.rotate_steps_chord > 0:
+            self.needs_rendering = True
             self.rotate_offset_chord += (self.rotate_iterator_chord *
                                          self.rotate_speedup)
             self.rotate_steps_chord -= 1
