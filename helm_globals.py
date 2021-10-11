@@ -20,7 +20,7 @@ note_wheel_labels = {11: {"step": 4,
                           "mode": "Lydian"},
                      0: {"step": 1,
                          "triad": "MAJ",
-                          "mode": "Ionian"},
+                         "mode": "Ionian"},
                      1: {"step": 5,
                          "triad": "MAJ",
                          "mode": "Mixolydian"},
@@ -54,12 +54,34 @@ notes = [
     {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
 ]
 
-key = 0  # Key is the index of the notes dict indicating the key
+
+class Key(object):
+    def __init__(self):
+        self.current_key = 0
+        self.current_chord_root = 0
+
+    def rotate_key(self, add_by=0):
+        self.current_key += add_by
+        self.current_key = self.current_key % 12  # Rollover range 0-11
+
+    def rotate_chord(self, add_by=0, set_to=None):
+        print("* chord - add_by:", add_by, " self.current_chord_root:",
+              self.current_chord_root)
+        self.current_chord_root += add_by
+        print("* chord - added now self.current_chord_root:",
+              self.current_chord_root)
+
+        if set_to is not None:
+            self.current_chord_root = set_to
+
+        self.current_chord_root = self.current_chord_root % 12  # Rollover ...
+        print("* chord - mod 12 self.current_chord_root:",
+              self.current_chord_root)
+
+key = Key()
 
 # notes, their positions and values, etc
 chord_position = 0  # The currently selected note position on the circle
-
-chord_selection = 0  # Currently selected chord root note index
 
 # For now, how intervals are defined:
 # The 'slice number' around the circle of fifths
@@ -71,14 +93,14 @@ chord_selection = 0  # Currently selected chord root note index
 # 6 = Seventh
 # 7 = Fourth
 chord_slices_dict = {1: 1,
-                          2: 5,
-                          3: 2,
-                          4: 6,
-                          5: 3,
-                          6: 7,
-                          7: 4}
+                     2: 5,
+                     3: 2,
+                     4: 6,
+                     5: 3,
+                     6: 7,
+                     7: 4}
 chord_definitions = {'1, 3, 5': (1, 3, 5)
-                          }
+                     }
 # self.chord_definitions = {'1, 3, 5': (1, 3, 5),
 #                           '1, 3, 5, 6': (1, 3, 5, 6),
 #                           '1, 3, 5, 7': (1, 3, 5, 7),
