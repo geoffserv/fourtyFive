@@ -1,23 +1,52 @@
 import math
+import helm_globals
 
 
 class Shape(object):
-    def __init__(self, canvas_margin=10, **kwargs):
-        self.canvas_margin = canvas_margin
+    def __init__(self, **kwargs):
+        # Informal interface for Shape
 
-        # list of coordinates representing this shape
-        self.coordinates = []
-        self.degrees = []
-        self.coordinates_boxes = []
+        # coordinate lists used by find_coordinates and render methods:
+        # If the shape is a polygon, line etc represented by a list of
+        #   coordinate pairs:
+        self.coordinates = []  # [(x, y), (x, y), ...]
+        # If the shape has some rotation associated with each coordinate
+        #   pair e.g. for placing and rotating text labels at each
+        #   location:
+        self.degrees = []  # [0, 90, 180, ...]
+        # If the shape represents rectangles, which pycharm expects
+        #   in (x, y, w, h):
+        self.coordinates_boxes = []  # [(x, y, w, h), ...]
+
+        self.canvas_size = kwargs.get('canvas_size', 100)
+
+        # Polar coordinate system values for circles, etc:
+        self.r = kwargs.get('r', 0)  # Radius, default 0px
+        # Center of the canvas X
+        self.origin_x = int(self.canvas_size / 2) + helm_globals.canvas_margin
+        # Center of the canvas Y
+        self.origin_y = int(self.canvas_size / 2) + helm_globals.canvas_margin
+        # self.canvas_width = (self.canvas_size +
+        #                      (helm_globals.canvas_margin * 2))
+        # self.canvas_height = (self.canvas_size +
+        #                       (helm_globals.canvas_margin * 2))
+        self.circle_divisions = 12  # 12-slices around the circle
+        # slice_no for specifying a pizza-like division of a circle
+        self.slice_no = kwargs.get('slice_no', 1)
+        # offset_orientation is a number of degrees added to everything
+        # to set an overall coordinate system rotation/orientation
+        self.offset_orientation = 90
+        # offset_degrees for tracking a # of degrees shape rotation
+        self.offset_degrees = kwargs.get('offset_degrees', 0)
 
     def find_coordinates(self):
         pass
 
 
 class ShapeNotesList(Shape):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(self.__class__, self).__init__(**kwargs)
 
         self.spacing_width = kwargs.get('spacing_width', 0)
         self.line_spacing = kwargs.get('line_spacing', 0)
@@ -29,18 +58,19 @@ class ShapeNotesList(Shape):
         for i in range(1, 13):
             self.coordinates.append(
                 (
-                    self.canvas_margin + self.left_margin +
+                    helm_globals.canvas_margin + self.left_margin +
                     (i * self.spacing_width),
-                    self.canvas_margin + self.spacing_width + self.line_spacing
+                    helm_globals.canvas_margin + self.spacing_width +
+                    self.line_spacing
                 )
             )
             self.degrees.append(0)
             self.coordinates_boxes.append(
                 (
-                    self.canvas_margin +
+                    helm_globals.canvas_margin +
                     (i * self.spacing_width) - int(self.spacing_width/2) +
                     self.left_margin,
-                    self.canvas_margin +
+                    helm_globals.canvas_margin +
                     self.spacing_width - int(self.spacing_width/2) +
                     self.line_spacing,
                     self.spacing_width,  # width
@@ -49,27 +79,10 @@ class ShapeNotesList(Shape):
             )
 
 
-# class ShapeWheel(object):
-#     def __init__(self, canvas_size, r, slice_no=1, offset_degrees=0):
 class ShapeWheel(Shape):
-    def __init__(self, *args, **kwargs):
-        # Run superclass __init__ to inherit all of those instance
-        # attributes
-        super(self.__class__, self).__init__(*args, **kwargs)
-
-        self.slice_no = kwargs.get('slice_no', 1)
-        self.r = kwargs.get('r', 100)
-        self.offset_degrees = kwargs.get('offset_degrees', 0)
-
-        self.circle_divisions = 12  # 12-slices around the circle
-        self.origin_x = self.r + self.canvas_margin  # Center of the canvas X
-        self.origin_y = self.r + self.canvas_margin  # Center of the canvas Y
-        self.canvas_width = ((self.r * 2) + (self.canvas_margin * 2))
-        self.canvas_height = ((self.r * 2) + (self.canvas_margin * 2))
-
-        # offset_orientation is a number of degrees added to everything
-        # to set an overall coordinate system orientation
-        self.offset_orientation = 90
+    def __init__(self, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(**kwargs)
 
         self.find_coordinates()
 
@@ -107,7 +120,13 @@ class ShapeWheel(Shape):
             )
 
 
-class ShapeWheelSlice(ShapeWheel):
+class ShapeWheelSlice(Shape):
+    def __init__(self, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(**kwargs)
+
+        self.find_coordinates()
+
     def find_coordinates(self):
         self.coordinates.append(  # Origin
             (
@@ -175,7 +194,13 @@ class ShapeWheelSlice(ShapeWheel):
         )
 
 
-class ShapeWheelRay(ShapeWheel):
+class ShapeWheelRay(Shape):
+    def __init__(self, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(**kwargs)
+
+        self.find_coordinates()
+
     def find_coordinates(self):
         self.coordinates.append(  # Origin
             (

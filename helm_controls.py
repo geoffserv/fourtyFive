@@ -1,21 +1,21 @@
 import pygame
-import sys
 from helm_shapes import ShapeWheel, ShapeWheelRay, ShapeWheelSlice, \
                         ShapeNotesList
+import helm_globals
 
 
 class ControlSystem(object):
 
     key = 0  # Key is the index of the notes dict indicating the key
 
-    def __init__(self, canvas_width, canvas_margin, color,
+    def __init__(self, canvas_width, color,
                  color_bg, color_accent, notes, blit_x, blit_y, font_small,
                  font_medium, font_medium_bold, font_x_large,
                  wheel_control=None):
+
         self.surface = None
         self.canvas_width = canvas_width
         self.canvas_height = canvas_width  # 1:1 control canvas ratio default
-        self.canvas_margin = canvas_margin
         self.color = color
         self.color_bg = color_bg
         self.color_accent = color_accent
@@ -32,8 +32,8 @@ class ControlSystem(object):
         self.font_medium_bold = font_medium_bold
         self.font_x_large = font_x_large  # XL sized font
         self.surface = pygame.Surface(
-            (int(self.canvas_width + (self.canvas_margin * 2)),
-             int(self.canvas_height + (self.canvas_margin * 2))))
+            (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
+             int(self.canvas_height + (helm_globals.canvas_margin * 2))))
 
     def init_surface(self):
         pass
@@ -45,7 +45,7 @@ class ControlSystem(object):
         coord_pair = 0
         for coordinates in shape.coordinates:
             if (coord_pair >= key) and \
-               (coord_pair <= (key + 5) ) and \
+               (coord_pair <= (key + 5)) and \
                     (key in range(7)):
                 # sharps
                 note_label = labels[coord_pair]['sharpName']
@@ -88,8 +88,8 @@ class ChordControl(ControlSystem):
         self.wheel_control = kwargs.get('wheel_control', None)
         self.canvas_height = 400
         self.surface = pygame.Surface(
-            (int(self.canvas_width + (self.canvas_margin * 2)),
-             int(self.canvas_height + (self.canvas_margin * 2))))
+            (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
+             int(self.canvas_height + (helm_globals.canvas_margin * 2))))
 
         # For now, how intervals are defined:
         # The 'slice number' around the circle of fifths
@@ -128,38 +128,43 @@ class ChordControl(ControlSystem):
         # IT'S ALL BAD
         # coord_pair = 0
         # for coordinates in shape.coordinates_boxes:
-            # print("coord_pair:",coord_pair)
-            # print("self.notes[coord_pair]['wheelPos']:",self.notes[coord_pair]['wheelPos'])
-            # print("wheel_control.chord_selection:",self.wheel_control.chord_selection)
-            # print("chord_def:",chord_def)
-            # if (
-            #     (abs(coord_pair - self.wheel_control.chord_selection) % 12)
-            # ) in chord_def:
-            #     rect = pygame.Rect(coordinates)
-            #     pygame.draw.rect(self.surface, color, rect, width)
-            #     # print("* draw square on:",coord_pair)
-            # coord_pair += 1
+        # print("coord_pair:",coord_pair)
+        # print("self.notes[coord_pair]['wheelPos']:",self.notes[coord_pair]['wheelPos'])
+        # print("wheel_control.chord_selection:",self.wheel_control.chord_selection)
+        # print("chord_def:",chord_def)
+        # if (
+        #     (abs(coord_pair - self.wheel_control.chord_selection) % 12)
+        # ) in chord_def:
+        #     rect = pygame.Rect(coordinates)
+        #     pygame.draw.rect(self.surface, color, rect, width)
+        #     # print("* draw square on:",coord_pair)
+        # coord_pair += 1
         # sys.exit()
         # Starting over
-        for i in range(7):
-            print("i:", i)
-            print("self.wheel_control.key:", self.wheel_control.key)
-            print("self.chord_slices_dict[i+1]:", self.chord_slices_dict[i+1])
-            print("chord_def:",chord_def)
-            if self.chord_slices_dict[i+1] in chord_def:
-                current_loc = i + self.wheel_control.chord_selection
-                print("self.wheel_control.chord_selection:", self.wheel_control.chord_selection)
-                print("current_loc:", current_loc)
-                # if (current_loc >= (6 + self.wheel_control.key)) and \
-                #         (current_loc < (11 + self.wheel_control.key)):
-                if (current_loc >= 6) and \
-                        (current_loc < 11):
-                    current_loc += 5
-                current_slice = (current_loc) % 12
-                print("current_slice:", current_slice)
-                rect = pygame.Rect(shape.coordinates_boxes[current_slice])
-                pygame.draw.rect(self.surface, color, rect, width)
-            # sys.exit()
+        # for i in range(7):
+        #     print("i:", i)
+        #     print("self.wheel_control.key:", self.wheel_control.key)
+        #     print("self.chord_slices_dict[i+1]:", self.chord_slices_dict[i+1]
+        #     )
+        #     print("chord_def:",chord_def)
+        #     if self.chord_slices_dict[i+1] in chord_def:
+        #         current_loc = i + self.wheel_control.chord_selection
+        #         print("self.wheel_control.chord_selection:", self.
+        #         wheel_control.chord_selection)
+        #         print("current_loc:", current_loc)
+        #         # if (current_loc >= (6 + self.wheel_control.key)) and \
+        #         #         (current_loc < (11 + self.wheel_control.key)):
+        #         if (current_loc >= 6) and \
+        #                 (current_loc < 11):
+        #             current_loc += 5
+        #         current_slice = (current_loc) % 12
+        #         print("current_slice:", current_slice)
+        #         rect = pygame.Rect(shape.coordinates_boxes[current_slice])
+        #         pygame.draw.rect(self.surface, color, rect, width)
+        # sys.exit()
+        # It's still all awful
+        # Just start over dude.
+        pass
 
     def draw_control(self):
         self.surface.fill(self.color_bg)
@@ -167,7 +172,6 @@ class ChordControl(ControlSystem):
         line_spacing = 0
         for chord_def in self.chord_definitions:
             line_coords = ShapeNotesList(spacing_width=44,
-                                         canvas_margin=self.canvas_margin,
                                          line_spacing=line_spacing,
                                          left_margin=226)
             self.draw_squares(line_coords, self.color, 1,
@@ -230,7 +234,7 @@ class WheelControl(ControlSystem):
         # It's an integer of degrees added to the overall rotation
         # If this is called and there is no rotation currently, begin
         #   rotation immediately
-        if ( self.rotate_steps == 0 ) or (self.rotate_iterator != direction):
+        if (self.rotate_steps == 0) or (self.rotate_iterator != direction):
             self.rotate_steps = int(self.rotate_amount / self.rotate_speedup) \
                                     - self.rotate_steps
             self.rotate_iterator = direction
@@ -272,7 +276,6 @@ class WheelControl(ControlSystem):
                 self.chord_selection = abs((5 + self.key) % 12)
                 self.rotate_offset_chord -= 150
 
-
     def update_control(self, events):
         # Handle the dict of events passed in for this update
         for event in events:
@@ -311,8 +314,7 @@ class WheelControl(ControlSystem):
         for i in [0]:  # Wheel position 0
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r,
-                                    slice_no=i,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=i)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "Key",
@@ -323,8 +325,7 @@ class WheelControl(ControlSystem):
         for i in [1]:  # Wheel position 1
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r,
-                                    slice_no=i,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=i)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "5ths >",
@@ -333,8 +334,7 @@ class WheelControl(ControlSystem):
         for i in [11]:  # Wheel position 11
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r,
-                                    slice_no=i,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=i)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             "< 4ths",
@@ -343,10 +343,9 @@ class WheelControl(ControlSystem):
 
         # Draw the reference circle
         # This uses self.rotate_offset, so it's a rotating layer
-        label_circle = ShapeWheel(r=self.r - 56,
-                                  slice_no=1,
-                                  offset_degrees=self.rotate_offset,
-                                  canvas_margin=self.canvas_margin)
+        label_circle = ShapeWheel(canvas_size=self.r * 2,
+                                  r=self.r - 56,
+                                  offset_degrees=self.rotate_offset)
         self.draw_key_labels(label_circle, self.notes, self.key)
 
         # Draw the slices
@@ -355,67 +354,42 @@ class WheelControl(ControlSystem):
             polygon = ShapeWheelSlice(canvas_size=self.r * 2,
                                       r=self.r - 70,
                                       slice_no=i,
-                                      offset_degrees=self.offset_degrees,
-                                      canvas_margin=self.canvas_margin)
+                                      offset_degrees=self.offset_degrees)
             self.draw_polygon(polygon, 0, self.color_accent)
 
             # Outlines
             polygon = ShapeWheelSlice(canvas_size=self.r * 2,
                                       r=self.r - 12,
                                       slice_no=i,
-                                      offset_degrees=self.offset_degrees,
-                                      canvas_margin=self.canvas_margin)
+                                      offset_degrees=self.offset_degrees)
             self.draw_polygon(polygon, 1, self.color)
 
-        labels = {11: {"step": 4,
-                       "triad": "MAJ",
-                       "mode": "Lydian"},
-                  0: {"step": 1,
-                       "triad": "MAJ",
-                       "mode": "Ionian"},
-                  1: {"step": 5,
-                      "triad": "MAJ",
-                      "mode": "Mixolydian"},
-                  2: {"step": 2,
-                      "triad": "min",
-                      "mode": "Dorian"},
-                  3: {"step": 6,
-                      "triad": "min",
-                      "mode": "Aeolian"},
-                  4: {"step": 3,
-                      "triad": "min",
-                      "mode": "Phrygian"},
-                  5: {"step": 7,
-                      "triad": "dim",
-                      "mode": "Locrian"},
-                 }
-
-        for label in labels:  # The 4
+        for label in helm_globals.note_wheel_labels:
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 200,
-                                    slice_no=label,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(labels[label]["step"]),
+                            str(helm_globals.note_wheel_labels[label]
+                                ["step"]),
                             self.font_medium_bold,
                             self.color_bg)
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 240,
-                                    slice_no=label,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(labels[label]["triad"]),
+                            str(helm_globals.note_wheel_labels[label]
+                                ["triad"]),
                             self.font_small,
                             self.color_bg)
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 365,
-                                    slice_no=label,
-                                    canvas_margin=self.canvas_margin)
+                                    slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0]+90,
-                            str(labels[label]["mode"]),
+                            str(helm_globals.note_wheel_labels[label]
+                                ["mode"]),
                             self.font_small,
                             self.color_bg)
 
@@ -423,10 +397,9 @@ class WheelControl(ControlSystem):
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                 r=self.r - 126,
                                 slice_no=0,
-                                offset_degrees=self.rotate_offset_chord,
-                                canvas_margin=self.canvas_margin)
+                                offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
                         "^",
                         self.font_x_large,
-                            self.color)
+                        self.color)

@@ -7,23 +7,21 @@
 import pygame
 from pygame.locals import *
 from helm_controls import WheelControl, ChordControl
+import helm_globals
 
-# Griffin Powermate support for Linux systems only
-# Can't even install the downstream dependency evdev unless running linux,
-# part of the install process checks for kernel header files and so on.
-# If in linux, set to True and connect a Powermate.  pip install pypowermate
-# Make sure to add the current, non-root UNIX user to the input group
-# in /etc/group, and then re-login.  Otherwise: permission errors.
-using_griffin_powermate = False
 
-if using_griffin_powermate:
+if helm_globals.using_griffin_powermate:
     from dqpypowermate import Powermate
+
+
+
+
 
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
 
         self.powermate = None
-        if using_griffin_powermate:
+        if helm_globals.using_griffin_powermate:
             self.powermate = Powermate('/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00')
 
         # Musical attributes
@@ -53,7 +51,6 @@ class Helm:
 
         self.r = int(
             (canvas_height * .8) / 2)  # R is half of __% of the screen
-        self.canvas_margin = 10
 
         # Define some colors for convenience and readability
         self.black = (0, 0, 0)
@@ -92,7 +89,7 @@ class Helm:
         # Listing available fonts, fun for later:
         # fonts = pygame.font.get_fonts()
         # for f in fonts:
-    	#     print(f)
+        #     print(f)
 
         # controlSurfaces list contains each controlSystem object that is
         # rendered.
@@ -110,13 +107,12 @@ class Helm:
         control_ff_wheel_size = int(self.canvas_height * 0.98)
         # Create a ffWheel control.  Init.
         control_ff_wheel = WheelControl(control_ff_wheel_size,
-                                        self.canvas_margin,  # inner margin
                                         self.orange, self.black,
                                         # fg color and bg color
                                         self.orange_25,  # accent color
                                         self.notes,  # list of note values
-                                        self.canvas_margin,
-                                        self.canvas_margin,  # Blit location
+                                        helm_globals.canvas_margin,  # Blit X
+                                        helm_globals.canvas_margin,  # Blit Y
                                         self.font_small_bold,
                                         self.font_med,
                                         self.font_med_bold,
@@ -133,14 +129,13 @@ class Helm:
         control_chord_size = int(self.canvas_width * 0.40)
         # Create a chord control.  Init.
         control_chord = ChordControl(control_chord_size,
-                                     self.canvas_margin,  # inner margin
                                      self.orange, self.black,
                                      # fg color and bg color
                                      self.orange_25,  # accent color
                                      self.notes,  # list of note values
                                      int(self.canvas_width / 2) + 130 +
-                                     self.canvas_margin,
-                                     self.canvas_margin + 30,  # Blit location
+                                     helm_globals.canvas_margin,  # Blit X
+                                     helm_globals.canvas_margin + 30,  # Blit Y
                                      self.font_small_bold,
                                      self.font_med,
                                      self.font_med_bold,
@@ -197,7 +192,7 @@ class Helm:
                     if event.key == pygame.K_a:
                         events["chord_majortriad_stop"] = True
 
-            if using_griffin_powermate:
+            if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
                 if event:
                     if event[2] == 1:
