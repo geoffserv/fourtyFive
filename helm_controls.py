@@ -107,59 +107,58 @@ class ChordControl(ControlSystem):
 
             if event == "chord_definitions[0]_start":
                 self.needs_rendering = True
-                print("chord_definitions[0]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['1'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[1]_start":
                 self.needs_rendering = True
-                print("chord_definitions[1]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['1, 5'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[2]_start":
                 self.needs_rendering = True
-                print("chord_definitions[2]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['1, 3, 5'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[3]_start":
                 self.needs_rendering = True
-                print("chord_definitions[3]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['1, 5, 7'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[4]_start":
                 self.needs_rendering = True
-                print("chord_definitions[4]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['5, 9'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[5]_start":
                 self.needs_rendering = True
-                print("chord_definitions[5]_start")
                 helm_globals.key.notes_on = \
                     helm_globals.key.calculate_chord(helm_globals.
                                                      chord_definitions
                                                      ['1, 5, 11'])
+                helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions_stop":
                 self.needs_rendering = True
-                print("chord_definitions_stop")
+                helm_globals.midi.notes_off(helm_globals.key.notes_on)
                 helm_globals.key.notes_on = []
 
     def draw_squares(self, shape, color, width, chord_def):
-        print("chord def:", chord_def)
         for note in helm_globals.key.calculate_chord(chord_def):
             rect = pygame.Rect(
                 shape.coordinates_boxes[note])
@@ -295,15 +294,6 @@ class WheelControl(ControlSystem):
                 self.rotate_chord(-1)
             if event == "chord_counterclockwise":
                 self.rotate_chord(1)
-            print("Key:", helm_globals.key.notes[helm_globals.key.current_key]
-                                                ['noteName'],
-                  ", Mode root:",
-                  helm_globals.key.notes[helm_globals.key.current_chord_root]
-                  ['noteName'],
-                  ", helm_globals.key.current_key:",
-                  helm_globals.key.current_key,
-                  ", helm_globals.key.current_chord_root:",
-                  helm_globals.key.current_chord_root)
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:

@@ -9,6 +9,7 @@ using_griffin_powermate = False
 
 # midi support
 using_midi = False
+midi = None
 
 # If I try to render things like text, corners of polygons, etc right up
 # against the edge of a surface, then there is often clipping.  So, track
@@ -75,21 +76,11 @@ class Key(object):
             self.diatonic.append(
                 (self.current_key + i) % 12
             )
-        print("Diatonic: ", self.diatonic)
-        print("Diatonic Notes: ", end="")
-        for note in self.diatonic:
-            print(self.notes[note]['noteName'], end=", ")
-        print("")
 
     def update_chord_scale(self):
         self.chord_scale = []
         for i in range(self.current_key_mode, self.current_key_mode + 7):
             self.chord_scale.append(self.diatonic[i % 7])
-        print("Chord Scale: ", self.chord_scale)
-        print("Chord Scale Notes: ", end="")
-        for note in self.chord_scale:
-            print(self.notes[note]['noteName'], end=", ")
-        print("")
 
     def rotate_key(self, add_by=0):
         self.current_key += add_by
@@ -101,29 +92,19 @@ class Key(object):
         self.current_key_mode = self.current_key_mode % 7
 
     def rotate_chord(self, add_by=0, set_to=None):
-        print("* chord - add_by:", add_by, " self.current_chord_root:",
-              self.current_chord_root, " self.current_key_mode:",
-              self.current_key_mode)
         self.current_chord_root += add_by
-        print("* chord - added now self.current_chord_root:",
-              self.current_chord_root)
 
         if set_to is not None:
             self.current_chord_root = set_to
 
         self.current_chord_root = self.current_chord_root % 12  # Rollover ...
-        print("* chord - mod 12 self.current_chord_root:",
-              self.current_chord_root)
 
         self.update_chord_scale()
 
     def calculate_chord(self, chord_def):
         chord = []
         for note in chord_def:
-            print("self.chord_scale[note]:",
-                  self.chord_scale[chord_slices_dict[note]])
             chord.append(self.chord_scale[chord_slices_dict[note]])
-        print("chord:", chord)
         return chord
 
 

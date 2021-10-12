@@ -9,6 +9,7 @@ from pygame.locals import *
 import helm_fonts
 from helm_controls import WheelControl, ChordControl
 import helm_globals
+import helm_midi
 import configparser
 
 
@@ -28,8 +29,18 @@ class Helm:
             try:
                 helm_globals.using_griffin_powermate = \
                     config['helm']['powermate']
+                # Convert from string
+                if helm_globals.using_griffin_powermate == "True":
+                    helm_globals.using_griffin_powermate = True
+                else:
+                    helm_globals.using_griffin_powermate = False
                 helm_globals.using_midi = \
                     config['helm']['midi']
+                if helm_globals.using_midi == "True":
+                    helm_globals.using_midi = True
+                else:
+                    helm_globals.using_midi = False
+
             except configparser.Error:
                 print("Config file error.  Maintaining defaults")
         else:
@@ -38,6 +49,8 @@ class Helm:
         self.powermate = None
         if helm_globals.using_griffin_powermate:
             try:
+                # Import here, because this module is un-installable on any
+                # OS other than Linux
                 from dqpypowermate import Powermate
             except ImportError:
                 pass
@@ -49,6 +62,8 @@ class Helm:
             powermate_path += "-"
             powermate_path += "event-if00"
             self.powermate = Powermate(powermate_path)
+
+        helm_globals.midi = helm_midi.Midi()
 
         # Graphics attributes
         # Clock, for tracking events and frame rate
