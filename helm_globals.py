@@ -38,35 +38,66 @@ note_wheel_labels = {11: {"step": 4,
                          "mode": "Locrian"},
                      }
 
-# Musical attributes
-notes = [
-    {'noteName': 'C', 'sharpName': 'C', 'kbNum': 1, 'wheelPos': 1},
-    {'noteName': 'G', 'sharpName': 'G', 'kbNum': 8, 'wheelPos': 2},
-    {'noteName': 'D', 'sharpName': 'D', 'kbNum': 3, 'wheelPos': 3},
-    {'noteName': 'A', 'sharpName': 'A', 'kbNum': 10, 'wheelPos': 4},
-    {'noteName': 'E', 'sharpName': 'E', 'kbNum': 5, 'wheelPos': 5},
-    {'noteName': 'B', 'sharpName': 'B', 'kbNum': 12, 'wheelPos': 6},
-    {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 7, 'wheelPos': 7},
-    {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 2, 'wheelPos': 8},
-    {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 9, 'wheelPos': 9},
-    {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 4, 'wheelPos': 10},
-    {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 11, 'wheelPos': 11},
-    {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 6, 'wheelPos': 12}
-]
-
 
 class Key(object):
     def __init__(self):
         self.current_key = 0
         self.current_chord_root = 0
+        self.current_key_mode = 0
+        self.notes = [
+            {'noteName': 'C', 'sharpName': 'C', 'kbNum': 0},
+            {'noteName': 'G', 'sharpName': 'G', 'kbNum': 7},
+            {'noteName': 'D', 'sharpName': 'D', 'kbNum': 2},
+            {'noteName': 'A', 'sharpName': 'A', 'kbNum': 9},
+            {'noteName': 'E', 'sharpName': 'E', 'kbNum': 4},
+            {'noteName': 'B', 'sharpName': 'B', 'kbNum': 11},
+            {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 6},
+            {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 1},
+            {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 8},
+            {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 3},
+            {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 10},
+            {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 5}
+                    ]
+
+        self.diatonic = [0, 1, 2, 3, 4, 5, 11]
+        self.chord_scale = [0, 1, 2, 3, 4, 5, 11]
+        self.key_scale_ordered = [0, 2, 4, 11, 1, 3, 5]
+
+    def update_diatonic(self):
+        self.diatonic = []
+        for i in [0, 1, 2, 3, 4, 5, 11]:
+            self.diatonic.append(
+                (self.current_key + i) % 12
+            )
+        print("Diatonic: ", self.diatonic)
+        print("Diatonic Notes: ", end="")
+        for note in self.diatonic:
+            print(self.notes[note]['noteName'], end=", ")
+        print("")
+
+    def update_chord_scale(self):
+        self.chord_scale = []
+        for i in range(self.current_key_mode, self.current_key_mode + 7):
+            self.chord_scale.append(self.diatonic[i % 7])
+        print("Chord Scale: ", self.chord_scale)
+        print("Chord Scale Notes: ", end="")
+        for note in self.chord_scale:
+            print(self.notes[note]['noteName'], end=", ")
+        print("")
 
     def rotate_key(self, add_by=0):
         self.current_key += add_by
         self.current_key = self.current_key % 12  # Rollover range 0-11
+        self.update_diatonic()
+
+    def rotate_key_mode(self, add_by=0):
+        self.current_key_mode += add_by
+        self.current_key_mode = self.current_key_mode % 7
 
     def rotate_chord(self, add_by=0, set_to=None):
         print("* chord - add_by:", add_by, " self.current_chord_root:",
-              self.current_chord_root)
+              self.current_chord_root, " self.current_key_mode:",
+              self.current_key_mode)
         self.current_chord_root += add_by
         print("* chord - added now self.current_chord_root:",
               self.current_chord_root)
@@ -78,35 +109,49 @@ class Key(object):
         print("* chord - mod 12 self.current_chord_root:",
               self.current_chord_root)
 
-key = Key()
+        self.update_chord_scale()
 
-# notes, their positions and values, etc
-chord_position = 0  # The currently selected note position on the circle
+    def calculate_chord(self, chord_def):
+        chord = []
+        for note in chord_def:
+            print("self.chord_scale[note]:",
+                  self.chord_scale[chord_slices_dict[note]])
+            chord.append(self.chord_scale[chord_slices_dict[note]])
+        print("chord:", chord)
+        return chord
+
+key = Key()
 
 # For now, how intervals are defined:
 # The 'slice number' around the circle of fifths
-# 1 = Root
-# 2 = Fifth
-# 3 = Second
-# 4 = Sixth
-# 5 = Third
-# 6 = Seventh
-# 7 = Fourth
-chord_slices_dict = {1: 1,
-                     2: 5,
-                     3: 2,
+# 0 = Root
+# 1 = Fifth
+# 2 = Second
+# 3 = Sixth
+# 4 = Third
+# 5 = Seventh
+# 6 = Fourth
+chord_slices_dict = {1: 0,
+                     2: 2,
+                     3: 4,
                      4: 6,
-                     5: 3,
-                     6: 7,
-                     7: 4}
-chord_definitions = {'1, 3, 5': (1, 3, 5)
-                     }
-# self.chord_definitions = {'1, 3, 5': (1, 3, 5),
+                     5: 1,
+                     6: 3,
+                     7: 5}
+
+chord_definitions = {'1': (1, ),
+                     '1, 5': (1, 5),
+                     '1, 3, 5': (1, 3, 5),
+                     '1, 5, 7': (1, 3, 7),
+                     '5, 9': (5, 2),
+                     '1, 5, 11': (1, 5, 4)}
+# chord_definitions = {'1, 3, 5': (1, 3, 5),
 #                           '1, 3, 5, 6': (1, 3, 5, 6),
 #                           '1, 3, 5, 7': (1, 3, 5, 7),
 #                           '1, 3, 5, 9': (1, 3, 5, 2),
 #                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
 #                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
+
 
 # Define some colors for convenience and readability
 color_black = (0, 0, 0)

@@ -49,17 +49,17 @@ class ControlSystem(object):
     def draw_polygon(self, shape, width, color):
         pygame.draw.polygon(self.surface, color, shape.coordinates, width)
 
-    def draw_key_labels(self, shape, labels, key):
+    def draw_key_labels(self, shape, labels):
         coord_pair = 0
         for coordinates in shape.coordinates:
-            if (coord_pair >= key) and \
-               (coord_pair <= (key + 5)) and \
-                    (key in range(7)):
+            if (coord_pair >= helm_globals.key.current_key) and \
+               (coord_pair <= (helm_globals.key.current_key + 5)) and \
+                    (helm_globals.key.current_key in range(7)):
                 # sharps
                 note_label = labels[coord_pair]['sharpName']
             else:
                 note_label = labels[coord_pair]['noteName']
-            if key == coord_pair:
+            if helm_globals.key.current_key == coord_pair:
                 font = helm_fonts.font['medium_bold']
             else:
                 font = helm_fonts.font['medium']
@@ -108,47 +108,14 @@ class ChordControl(ControlSystem):
                 self.needs_rendering = True
                 print("major triad off. key:", helm_globals.key.current_key)
 
-    def draw_squares(self, shape, color, width, chord_root, chord_def):
-        # IT'S ALL BAD
-        # coord_pair = 0
-        # for coordinates in shape.coordinates_boxes:
-        # print("coord_pair:",coord_pair)
-        # print("self.notes[coord_pair]['wheelPos']:",self.notes[coord_pair]['wheelPos'])
-        # print("wheel_control.chord_selection:",self.wheel_control.chord_selection)
-        # print("chord_def:",chord_def)
-        # if (
-        #     (abs(coord_pair - self.wheel_control.chord_selection) % 12)
-        # ) in chord_def:
-        #     rect = pygame.Rect(coordinates)
-        #     pygame.draw.rect(self.surface, color, rect, width)
-        #     # print("* draw square on:",coord_pair)
-        # coord_pair += 1
-        # sys.exit()
-        # Starting over
-        # for i in range(7):
-        #     print("i:", i)
-        #     print("self.wheel_control.key:", self.wheel_control.key)
-        #     print("self.chord_slices_dict[i+1]:", self.chord_slices_dict[i+1]
-        #     )
-        #     print("chord_def:",chord_def)
-        #     if self.chord_slices_dict[i+1] in chord_def:
-        #         current_loc = i + self.wheel_control.chord_selection
-        #         print("self.wheel_control.chord_selection:", self.
-        #         wheel_control.chord_selection)
-        #         print("current_loc:", current_loc)
-        #         # if (current_loc >= (6 + self.wheel_control.key)) and \
-        #         #         (current_loc < (11 + self.wheel_control.key)):
-        #         if (current_loc >= 6) and \
-        #                 (current_loc < 11):
-        #             current_loc += 5
-        #         current_slice = (current_loc) % 12
-        #         print("current_slice:", current_slice)
-        #         rect = pygame.Rect(shape.coordinates_boxes[current_slice])
-        #         pygame.draw.rect(self.surface, color, rect, width)
-        # sys.exit()
-        # It's still all awful
-        # Just start over dude.
-        pass
+    def draw_squares(self, shape, color, width, chord_def):
+        print("chord def:", chord_def)
+        for note in helm_globals.key.calculate_chord(chord_def):
+            # print("self.chord_scale[note]:",
+            #       helm_globals.key.chord_scale[helm_globals.chord_slices_dict[note]])
+            rect = pygame.Rect(
+                shape.coordinates_boxes[note])
+            pygame.draw.rect(self.surface, color, rect, width)
 
     def draw_control(self):
         self.surface.fill(self.color_bg)
@@ -159,10 +126,8 @@ class ChordControl(ControlSystem):
                                          line_spacing=line_spacing,
                                          left_margin=226)
             self.draw_squares(line_coords, self.color, 1,
-                              helm_globals.key.current_chord_root,
                               helm_globals.chord_definitions[chord_def])
-            self.draw_key_labels(line_coords, helm_globals.notes,
-                                 helm_globals.key.current_key)
+            self.draw_key_labels(line_coords, helm_globals.key.notes)
             self.draw_label((line_coords.coordinates[0][0]-168,
                              line_coords.coordinates[0][1]),
                             0,
@@ -243,23 +208,29 @@ class WheelControl(ControlSystem):
                                       - self.rotate_steps_chord
             self.rotate_iterator_chord = direction
 
-            # Update the "pointer position"
-            helm_globals.chord_position += self.rotate_iterator_chord
-            helm_globals.chord_position = abs(helm_globals.chord_position
-                                              % 12)
-            # Change the chord, too
-            helm_globals.key.rotate_chord(add_by=self.rotate_iterator_chord)
+            # Change the mode
+            helm_globals.key.rotate_key_mode(add_by
+                                             =self.rotate_iterator_chord)
+
+            if (abs((helm_globals.key.current_chord_root -
+                     helm_globals.key.current_key) % 12) <= 5) or \
+                    (abs((helm_globals.key.current_chord_root -
+                          helm_globals.key.current_key) % 12) == 11):
+                # Change the chord
+                helm_globals.key.rotate_chord(add_by
+                                              =self.rotate_iterator_chord)
 
             # Handle the "rollover" as the pointer skips past non-Diotonics
-            if helm_globals.chord_position == 6:
-                helm_globals.chord_position = 11
-                helm_globals.key.rotate_chord(set_to=(11+helm_globals.key.
+            # if helm_globals.chord_position == 6:
+            if abs((helm_globals.key.current_chord_root -
+                    helm_globals.key.current_key) % 12) == 6:
+                helm_globals.key.rotate_chord(set_to=(11 + helm_globals.key.
                                                       current_key))
                 self.rotate_offset_chord += 150
 
-            if helm_globals.chord_position == 10:
-                helm_globals.chord_position = 5
-                helm_globals.key.rotate_chord(set_to=(5+helm_globals.key.
+            if abs((helm_globals.key.current_chord_root -
+                    helm_globals.key.current_key) % 12) == 10:
+                helm_globals.key.rotate_chord(set_to=(5 + helm_globals.key.
                                                       current_key))
                 self.rotate_offset_chord -= 150
 
@@ -276,10 +247,10 @@ class WheelControl(ControlSystem):
                 self.rotate_chord(-1)
             if event == "chord_counterclockwise":
                 self.rotate_chord(1)
-            print("Key:", helm_globals.notes[helm_globals.key.current_key]
-                                            ['noteName'],
+            print("Key:", helm_globals.key.notes[helm_globals.key.current_key]
+                                                ['noteName'],
                   ", Mode root:",
-                  helm_globals.notes[helm_globals.key.current_chord_root]
+                  helm_globals.key.notes[helm_globals.key.current_chord_root]
                   ['noteName'],
                   ", helm_globals.key.current_key:",
                   helm_globals.key.current_key,
@@ -342,8 +313,7 @@ class WheelControl(ControlSystem):
         label_circle = ShapeWheel(canvas_size=self.r * 2,
                                   r=self.r - 56,
                                   offset_degrees=self.rotate_offset)
-        self.draw_key_labels(label_circle, helm_globals.notes,
-                             helm_globals.key.current_key)
+        self.draw_key_labels(label_circle, helm_globals.key.notes)
 
         # Draw the slices
         for i in [0, 1, 2, 3, 4, 5, 11]:
