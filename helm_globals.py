@@ -7,6 +7,9 @@
 # Win / Mac: set to False and no powermate for you :c
 using_griffin_powermate = False
 
+# midi support
+using_midi = False
+
 # If I try to render things like text, corners of polygons, etc right up
 # against the edge of a surface, then there is often clipping.  So, track
 # a global canvas_margin to offset all coordinate systems and give some

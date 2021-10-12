@@ -379,6 +379,7 @@ class WheelControl(ControlSystem):
                                       offset_degrees=self.offset_degrees)
             self.draw_polygon(polygon, 1, self.color)
 
+        for i in range(12):
             # "Currently playing" highlights, if on:
             if ((i + helm_globals.key.current_key) % 12) \
                     in helm_globals.key.notes_on:

@@ -6,20 +6,41 @@
 
 import pygame
 from pygame.locals import *
-
 import helm_fonts
 from helm_controls import WheelControl, ChordControl
 import helm_globals
-
-if helm_globals.using_griffin_powermate:
-    from dqpypowermate import Powermate
+import configparser
 
 
 class Helm:
-    def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
+    def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True,
+                 configfile="helm.cfg"):
+        # By default this expects helm.cfg in the same directory as this script
+        # In the format (with whichever appropriate values you like):
+        #
+        # [helm]
+        # powermate = False
+        # midi = False
+
+        config = configparser.ConfigParser()
+
+        if config.read(configfile):
+            try:
+                helm_globals.using_griffin_powermate = \
+                    config['helm']['powermate']
+                helm_globals.using_midi = \
+                    config['helm']['midi']
+            except configparser.Error:
+                print("Config file error.  Maintaining defaults")
+        else:
+            print("Could not open configfile.  Maintaining defaults")
 
         self.powermate = None
         if helm_globals.using_griffin_powermate:
+            try:
+                from dqpypowermate import Powermate
+            except ImportError:
+                pass
             powermate_path = "/dev/input/by-id/usb"
             powermate_path += "-"
             powermate_path += "Griffin_Technology__Inc."
