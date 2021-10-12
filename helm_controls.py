@@ -216,7 +216,7 @@ class WheelControl(ControlSystem):
         self.rotate_amount = int(360 / 36)
         # rotate_speedup is a multiplier of frames to skip, to make
         # animation super quick.  Factors of 30 will work best
-        self.rotate_speedup = 5
+        self.rotate_speedup = 10
 
         # The circle is divided in to 12 segments
         # But if want a _side_ to be oriented upwards, not a _point_
@@ -234,7 +234,22 @@ class WheelControl(ControlSystem):
                                     - self.rotate_steps
             self.rotate_iterator = direction
 
-            if False:
+            print("self.rotate_offset:", self.rotate_offset,
+                "rotate_offset + rotate_amount:", 
+                self.rotate_offset + (self.rotate_amount * self.rotate_iterator), 
+                "mod 360/12:", (self.rotate_offset + (self.rotate_iterator * self.rotate_amount)) 
+                    % (360/12),
+                "self.rotate_amount:", self.rotate_amount,
+                "self.rotate_iterator:", self.rotate_iterator)
+
+            if ((self.rotate_iterator == 1) and
+                (abs((self.rotate_offset + (self.rotate_amount * self.rotate_iterator)) 
+                    % (360/12)) == 20)) or \
+                ((self.rotate_iterator == -1) and
+                (abs((self.rotate_offset + (self.rotate_amount * self.rotate_iterator)) 
+                    % (360/12)) == 10)):
+                print("ROTATE KEY")
+
                 # Set the key index as we turn around
                 # Subtract because of the rotating-disk mechanic, the newly chosen
                 # option is OPPOSITE direction of the disk turning
@@ -257,7 +272,13 @@ class WheelControl(ControlSystem):
                                       - self.rotate_steps_chord
             self.rotate_iterator_chord = direction
 
-            if False:
+            if ((self.rotate_iterator_chord == 1) and
+                (abs((self.rotate_offset_chord + (self.rotate_amount * self.rotate_iterator_chord)) 
+                    % (360/12)) == 20)) or \
+                ((self.rotate_iterator_chord == -1) and
+                (abs((self.rotate_offset_chord + (self.rotate_amount * self.rotate_iterator_chord)) 
+                    % (360/12)) == 10)):
+                print("ROTATE CHORD")
 
                 # Change the mode
                 helm_globals.key.rotate_key_mode(

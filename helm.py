@@ -59,7 +59,7 @@ class Helm:
             try:
                 # Import here, because this module is un-installable on any
                 # OS other than Linux
-                from dqpypowermate import Powermate
+                from pypowermate import Powermate
             except ImportError:
                 pass
             powermate_path = "/dev/input/by-id/usb"
@@ -243,12 +243,12 @@ class Helm:
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
                 if event:
-                    if event[2] == 1:
+                    if event[2] == -1:
                         if helm_globals.rotation_ring in ("key", "all"):
                             events["key_counterclockwise"] = True
                         if helm_globals.rotation_ring in ("mode", "all"):
                             events["chord_clockwise"] = True
-                    if event[2] == -1:
+                    if event[2] == 1:
                         if helm_globals.rotation_ring in ("key", "all"):
                             events["key_clockwise"] = True
                         if helm_globals.rotation_ring in ("mode", "all"):
