@@ -4,8 +4,8 @@ import helm_globals
 
 class Midi(object):
     def __init__(self):
-        self.inport_name = 'wavestate 1 Out'
-        self.outport_name = 'wavestate 1 In'
+        self.inport_name = 'wavestate:wavestate MIDI 1 20:0'
+        self.outport_name = 'wavestate:wavestate MIDI 1 20:0'
 
         self.channel = 0
 
