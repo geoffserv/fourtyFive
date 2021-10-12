@@ -115,7 +115,7 @@ class Helm:
 
             if needs_rendering:
                 # First, draw the screen:
-                # Loop through each controlSystem added to the controlSurfaces list
+                # Loop through each controlSystem added to the controlSurfaces
                 for controlSurface in self.controlSurfaces:
                     # The drawControl method should update the control's visual
                     # elements and
@@ -148,10 +148,25 @@ class Helm:
                     if event.key == pygame.K_e:
                         events["chord_counterclockwise"] = True
                     if event.key == pygame.K_a:
-                        events["chord_majortriad_start"] = True
+                        events["chord_definitions[0]_start"] = True
+                    if event.key == pygame.K_s:
+                        events["chord_definitions[1]_start"] = True
+                    if event.key == pygame.K_d:
+                        events["chord_definitions[2]_start"] = True
+                    if event.key == pygame.K_z:
+                        events["chord_definitions[3]_start"] = True
+                    if event.key == pygame.K_x:
+                        events["chord_definitions[4]_start"] = True
+                    if event.key == pygame.K_c:
+                        events["chord_definitions[5]_start"] = True
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_a:
-                        events["chord_majortriad_stop"] = True
+                    if event.key == pygame.K_a or \
+                       event.key == pygame.K_s or \
+                       event.key == pygame.K_d or \
+                       event.key == pygame.K_z or \
+                       event.key == pygame.K_x or \
+                       event.key == pygame.K_c:
+                        events["chord_definitions_stop"] = True
 
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)

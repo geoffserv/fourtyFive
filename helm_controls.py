@@ -101,12 +101,62 @@ class ChordControl(ControlSystem):
         self.needs_rendering = False
         # Handle the dict of events passed in for this update
         for event in events:
-            if event == "chord_majortriad_start":
+            # Obviously very tediously repeated code here,
+            # But doing it for a reason: clarity and custom capability with
+            # button bindings and actions.  Can condense down later.
+
+            if event == "chord_definitions[0]_start":
                 self.needs_rendering = True
-                print("major triad on. key:", helm_globals.key.current_key)
-            if event == "chord_majortriad_stop":
+                print("chord_definitions[0]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['1'])
+
+            if event == "chord_definitions[1]_start":
                 self.needs_rendering = True
-                print("major triad off. key:", helm_globals.key.current_key)
+                print("chord_definitions[1]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['1, 5'])
+
+            if event == "chord_definitions[2]_start":
+                self.needs_rendering = True
+                print("chord_definitions[2]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['1, 3, 5'])
+
+            if event == "chord_definitions[3]_start":
+                self.needs_rendering = True
+                print("chord_definitions[3]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['1, 5, 7'])
+
+            if event == "chord_definitions[4]_start":
+                self.needs_rendering = True
+                print("chord_definitions[4]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['5, 9'])
+
+            if event == "chord_definitions[5]_start":
+                self.needs_rendering = True
+                print("chord_definitions[5]_start")
+                helm_globals.key.notes_on = \
+                    helm_globals.key.calculate_chord(helm_globals.
+                                                     chord_definitions
+                                                     ['1, 5, 11'])
+
+            if event == "chord_definitions_stop":
+                self.needs_rendering = True
+                print("chord_definitions_stop")
+                helm_globals.key.notes_on = []
 
     def draw_squares(self, shape, color, width, chord_def):
         print("chord def:", chord_def)
@@ -209,16 +259,16 @@ class WheelControl(ControlSystem):
             self.rotate_iterator_chord = direction
 
             # Change the mode
-            helm_globals.key.rotate_key_mode(add_by
-                                             =self.rotate_iterator_chord)
+            helm_globals.key.rotate_key_mode(
+                add_by=self.rotate_iterator_chord)
 
             if (abs((helm_globals.key.current_chord_root -
                      helm_globals.key.current_key) % 12) <= 5) or \
                     (abs((helm_globals.key.current_chord_root -
                           helm_globals.key.current_key) % 12) == 11):
                 # Change the chord
-                helm_globals.key.rotate_chord(add_by
-                                              =self.rotate_iterator_chord)
+                helm_globals.key.rotate_chord(
+                    add_by=self.rotate_iterator_chord)
 
             # Handle the "rollover" as the pointer skips past non-Diotonics
             # if helm_globals.chord_position == 6:
@@ -330,6 +380,15 @@ class WheelControl(ControlSystem):
                                       slice_no=i,
                                       offset_degrees=self.offset_degrees)
             self.draw_polygon(polygon, 1, self.color)
+
+            # "Currently playing" highlights, if on:
+            if ((i + helm_globals.key.current_key) % 12) \
+                    in helm_globals.key.notes_on:
+                polygon = ShapeWheelSlice(canvas_size=self.r * 2,
+                                          r=self.r - 160,
+                                          slice_no=i,
+                                          offset_degrees=self.offset_degrees)
+                self.draw_polygon(polygon, 0, self.color)
 
         for label in helm_globals.note_wheel_labels:
             polygon = ShapeWheelRay(canvas_size=self.r * 2,

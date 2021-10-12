@@ -44,6 +44,9 @@ class Key(object):
         self.current_key = 0
         self.current_chord_root = 0
         self.current_key_mode = 0
+        self.notes_on = []  # List containing key.notes indices currently
+        # playing 0-11
+
         self.notes = [
             {'noteName': 'C', 'sharpName': 'C', 'kbNum': 0},
             {'noteName': 'G', 'sharpName': 'G', 'kbNum': 7},
@@ -120,6 +123,7 @@ class Key(object):
         print("chord:", chord)
         return chord
 
+
 key = Key()
 
 # For now, how intervals are defined:
@@ -142,7 +146,7 @@ chord_slices_dict = {1: 0,
 chord_definitions = {'1': (1, ),
                      '1, 5': (1, 5),
                      '1, 3, 5': (1, 3, 5),
-                     '1, 5, 7': (1, 3, 7),
+                     '1, 5, 7': (1, 5, 7),
                      '5, 9': (5, 2),
                      '1, 5, 11': (1, 5, 4)}
 # chord_definitions = {'1, 3, 5': (1, 3, 5),
