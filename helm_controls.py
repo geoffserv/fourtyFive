@@ -213,10 +213,10 @@ class WheelControl(ControlSystem):
 
         # rotate_amount is how many degrees to hop per event
         # 1 degree per event makes turning the circle sloooow
-        self.rotate_amount = int(360 / 12)
+        self.rotate_amount = int(360 / 36)
         # rotate_speedup is a multiplier of frames to skip, to make
         # animation super quick.  Factors of 30 will work best
-        self.rotate_speedup = 10
+        self.rotate_speedup = 5
 
         # The circle is divided in to 12 segments
         # But if want a _side_ to be oriented upwards, not a _point_
@@ -233,13 +233,15 @@ class WheelControl(ControlSystem):
             self.rotate_steps = int(self.rotate_amount / self.rotate_speedup) \
                                     - self.rotate_steps
             self.rotate_iterator = direction
-            # Set the key index as we turn around
-            # Subtract because of the rotating-disk mechanic, the newly chosen
-            # option is OPPOSITE direction of the disk turning
-            helm_globals.key.rotate_key(add_by=(-1 * self.rotate_iterator))
 
-            # Change the chord, too
-            helm_globals.key.rotate_chord(add_by=(-1 * self.rotate_iterator))
+            if False:
+                # Set the key index as we turn around
+                # Subtract because of the rotating-disk mechanic, the newly chosen
+                # option is OPPOSITE direction of the disk turning
+                helm_globals.key.rotate_key(add_by=(-1 * self.rotate_iterator))
+
+                # Change the chord, too
+                helm_globals.key.rotate_chord(add_by=(-1 * self.rotate_iterator))
 
     def rotate_chord(self, direction):
         # Set direction to 1 for clockwise rotation
@@ -255,31 +257,33 @@ class WheelControl(ControlSystem):
                                       - self.rotate_steps_chord
             self.rotate_iterator_chord = direction
 
-            # Change the mode
-            helm_globals.key.rotate_key_mode(
-                add_by=self.rotate_iterator_chord)
+            if False:
 
-            if (abs((helm_globals.key.current_chord_root -
-                     helm_globals.key.current_key) % 12) <= 5) or \
-                    (abs((helm_globals.key.current_chord_root -
-                          helm_globals.key.current_key) % 12) == 11):
-                # Change the chord
-                helm_globals.key.rotate_chord(
+                # Change the mode
+                helm_globals.key.rotate_key_mode(
                     add_by=self.rotate_iterator_chord)
 
-            # Handle the "rollover" as the pointer skips past non-Diotonics
-            # if helm_globals.chord_position == 6:
-            if abs((helm_globals.key.current_chord_root -
-                    helm_globals.key.current_key) % 12) == 6:
-                helm_globals.key.rotate_chord(set_to=(11 + helm_globals.key.
-                                                      current_key))
-                self.rotate_offset_chord += 150
+                if (abs((helm_globals.key.current_chord_root -
+                         helm_globals.key.current_key) % 12) <= 5) or \
+                        (abs((helm_globals.key.current_chord_root -
+                              helm_globals.key.current_key) % 12) == 11):
+                    # Change the chord
+                    helm_globals.key.rotate_chord(
+                        add_by=self.rotate_iterator_chord)
 
-            if abs((helm_globals.key.current_chord_root -
-                    helm_globals.key.current_key) % 12) == 10:
-                helm_globals.key.rotate_chord(set_to=(5 + helm_globals.key.
-                                                      current_key))
-                self.rotate_offset_chord -= 150
+                # Handle the "rollover" as the pointer skips past non-Diotonics
+                # if helm_globals.chord_position == 6:
+                if abs((helm_globals.key.current_chord_root -
+                        helm_globals.key.current_key) % 12) == 6:
+                    helm_globals.key.rotate_chord(set_to=(11 + helm_globals.key.
+                                                          current_key))
+                    self.rotate_offset_chord += 150
+
+                if abs((helm_globals.key.current_chord_root -
+                        helm_globals.key.current_key) % 12) == 10:
+                    helm_globals.key.rotate_chord(set_to=(5 + helm_globals.key.
+                                                          current_key))
+                    self.rotate_offset_chord -= 150
 
     def update_control(self, events):
         self.needs_rendering = False

@@ -244,9 +244,15 @@ class Helm:
                 event = self.powermate.read_event(timeout=0)
                 if event:
                     if event[2] == 1:
-                        events["K_a"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["key_counterclockwise"] = True
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["chord_clockwise"] = True
                     if event[2] == -1:
-                        events["K_d"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["key_clockwise"] = True
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["chord_counterclockwise"] = True
 
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
