@@ -149,13 +149,12 @@ chord_definitions = {'1': (1, ),
                      '1, 5, 7': (1, 5, 7),
                      '5, 9': (5, 2),
                      '1, 5, 11': (1, 5, 4)}
-# chord_definitions = {'1, 3, 5': (1, 3, 5),
-#                           '1, 3, 5, 6': (1, 3, 5, 6),
-#                           '1, 3, 5, 7': (1, 3, 5, 7),
-#                           '1, 3, 5, 9': (1, 3, 5, 2),
-#                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
-#                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
 
+# The main module handles input, but some of the other modules
+# may need to know some input states:
+rotation_ring = "mode"  # Which ring is under control: "key", "mode", "all"
+
+notes_hanging = False  # When true, don't stop notes on keyUps
 
 # Define some colors for convenience and readability
 color_black = (0, 0, 0)

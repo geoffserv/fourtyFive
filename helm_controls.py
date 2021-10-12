@@ -161,8 +161,6 @@ class ChordControl(ControlSystem):
     def draw_squares(self, shape, color, width, chord_def):
         print("chord def:", chord_def)
         for note in helm_globals.key.calculate_chord(chord_def):
-            # print("self.chord_scale[note]:",
-            #       helm_globals.key.chord_scale[helm_globals.chord_slices_dict[note]])
             rect = pygame.Rect(
                 shape.coordinates_boxes[note])
             pygame.draw.rect(self.surface, color, rect, width)

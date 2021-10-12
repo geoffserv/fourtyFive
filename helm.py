@@ -137,16 +137,37 @@ class Helm:
                 if event.type == QUIT:  # If the window 'close' button...
                     self.running = False
                 if event.type == pygame.KEYDOWN:
+                    # Hold 'e' to rotate the "key" ring
+                    if event.key == pygame.K_e:
+                        helm_globals.rotation_ring = "key"
+
+                    # Hold 'w' to rotate both rings in unison
+                    if event.key == pygame.K_w:
+                        helm_globals.rotation_ring = "all"
+
+                    # Hold 'q' to hang notes: preventing note offs
+                    if event.key == pygame.K_q:
+                        helm_globals.notes_hanging = True
+
+                    # esc to quit
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
+
                     if event.key == pygame.K_COMMA:
-                        events["key_clockwise"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["key_counterclockwise"] = True
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["chord_clockwise"] = True
                     if event.key == pygame.K_PERIOD:
-                        events["key_counterclockwise"] = True
-                    if event.key == pygame.K_q:
-                        events["chord_clockwise"] = True
-                    if event.key == pygame.K_e:
-                        events["chord_counterclockwise"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["key_clockwise"] = True
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["chord_counterclockwise"] = True
+                    # if event.key == pygame.K_q:
+                    #     events["chord_clockwise"] = True
+                    # if event.key == pygame.K_e:
+                    #     events["chord_counterclockwise"] = True
+
                     if event.key == pygame.K_a:
                         events["chord_definitions[0]_start"] = True
                     if event.key == pygame.K_s:
@@ -159,13 +180,22 @@ class Helm:
                         events["chord_definitions[4]_start"] = True
                     if event.key == pygame.K_c:
                         events["chord_definitions[5]_start"] = True
+
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_a or \
-                       event.key == pygame.K_s or \
-                       event.key == pygame.K_d or \
-                       event.key == pygame.K_z or \
-                       event.key == pygame.K_x or \
-                       event.key == pygame.K_c:
+                    if event.key == pygame.K_e or \
+                       event.key == pygame.K_w:
+                        helm_globals.rotation_ring = "mode"
+
+                    if event.key == pygame.K_q:
+                        helm_globals.notes_hanging = False
+
+                    if not helm_globals.notes_hanging and \
+                        (event.key == pygame.K_a or
+                         event.key == pygame.K_s or
+                         event.key == pygame.K_d or
+                         event.key == pygame.K_z or
+                         event.key == pygame.K_x or
+                         event.key == pygame.K_c):
                         events["chord_definitions_stop"] = True
 
             if helm_globals.using_griffin_powermate:
