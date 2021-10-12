@@ -16,6 +16,9 @@ import configparser
 class Helm:
     def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True,
                  configfile="helm.cfg"):
+
+        self.fullscreen = False
+
         # By default this expects helm.cfg in the same directory as this script
         # In the format (with whichever appropriate values you like):
         #
@@ -40,6 +43,11 @@ class Helm:
                     helm_globals.using_midi = True
                 else:
                     helm_globals.using_midi = False
+                self.fullscreen = config['helm']['fullscreen']
+                if self.fullscreen == "True":
+                    self.fullscreen = True
+                else:
+                    self.fullscreen = False
 
             except configparser.Error:
                 print("Config file error.  Maintaining defaults")
@@ -68,8 +76,6 @@ class Helm:
         # Graphics attributes
         # Clock, for tracking events and frame rate
         self.clock = pygame.time.Clock()
-
-        self.fullscreen = False
 
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
