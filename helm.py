@@ -276,7 +276,7 @@ class Helm:
                         if helm_globals.rotation_ring in ("mode", "all"):
                             events[",_down_2"] = {'rotate': True,
                                                   'wheel': 'chord',
-                                                  'dir': 'cw'}
+                                                  'dir': 'ccw'}
                     if event[2] == 1:
                         if helm_globals.rotation_ring in ("key", "all"):
                             events["._down_1"] = {'rotate': True,
@@ -284,7 +284,7 @@ class Helm:
                         if helm_globals.rotation_ring in ("mode", "all"):
                             events["._down_2"] = {'rotate': True,
                                                   'wheel': 'chord',
-                                                  'dir': 'ccw'}
+                                                  'dir': 'cw'}
 
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
