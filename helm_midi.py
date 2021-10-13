@@ -61,4 +61,3 @@ class Midi(object):
                                        note=midi_note,
                                        velocity=velocity)  # 1 - 127
                     self.outport.send(msg)
-                    a
