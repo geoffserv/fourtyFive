@@ -138,7 +138,7 @@ chord_definitions = {'1': (1, ),
 # may need to know some input states:
 rotation_ring = "mode"  # Which ring is under control: "key", "mode", "all"
 
-notes_hanging = False  # When true, don't stop notes on keyUps
+notes_latched = False  # When true, don't stop notes on keyUps
 
 # Define some colors for convenience and readability
 color_black = (0, 0, 0)

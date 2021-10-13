@@ -182,9 +182,6 @@ class Helm:
                     # Hold 'e' to rotate the "key" ring
                     if event.key == pygame.K_e:
                         helm_globals.rotation_ring = "key"
-                        # if 'q' is also being held, send an all-notes-off:
-                        if helm_globals.notes_hanging:
-                            events["chord_definitions_all_stop"] = True
 
                     # Hold 'w' to rotate both rings in unison
                     if event.key == pygame.K_w:
@@ -192,7 +189,7 @@ class Helm:
 
                     # Hold 'q' to hang notes: preventing note offs
                     if event.key == pygame.K_q:
-                        helm_globals.notes_hanging = True
+                        helm_globals.notes_latched = True
 
                     # esc to quit
                     if event.key == pygame.K_ESCAPE:
@@ -200,32 +197,43 @@ class Helm:
 
                     if event.key == pygame.K_COMMA:
                         if helm_globals.rotation_ring in ("key", "all"):
-                            events["key_counterclockwise"] = True
+                            events[",_down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'ccw'}
                         if helm_globals.rotation_ring in ("mode", "all"):
-                            events["chord_clockwise"] = True
+                            events[",_down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'cw'}
                     if event.key == pygame.K_PERIOD:
                         if helm_globals.rotation_ring in ("key", "all"):
-                            events["key_clockwise"] = True
+                            events["._down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'cw'}
                         if helm_globals.rotation_ring in ("mode", "all"):
-                            events["chord_counterclockwise"] = True
-                    # if event.key == pygame.K_q:
-                    #     events["chord_clockwise"] = True
-                    # if event.key == pygame.K_e:
-                    #     events["chord_counterclockwise"] = True
+                            events["._down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'ccw'}
 
-                    if not helm_globals.notes_hanging:
+                    if not helm_globals.notes_latched:
                         if event.key == pygame.K_a:
-                            events["chord_definitions[0]_start"] = True
+                            events["a_down"] = {'trigger_note': True,
+                                                'chord': '1', 'start': True}
                         if event.key == pygame.K_s:
-                            events["chord_definitions[1]_start"] = True
+                            events["s_down"] = {'trigger_note': True,
+                                                'chord': '1, 5', 'start': True}
                         if event.key == pygame.K_d:
-                            events["chord_definitions[2]_start"] = True
+                            events["d_down"] = {'trigger_note': True,
+                                                'chord': '1, 3, 5',
+                                                'start': True}
                         if event.key == pygame.K_z:
-                            events["chord_definitions[3]_start"] = True
+                            events["z_down"] = {'trigger_note': True,
+                                                'chord': '1, 5, 7',
+                                                'start': True}
                         if event.key == pygame.K_x:
-                            events["chord_definitions[4]_start"] = True
+                            events["x_down"] = {'trigger_note': True,
+                                                'chord': '5, 9', 'start': True}
                         if event.key == pygame.K_c:
-                            events["chord_definitions[5]_start"] = True
+                            events["c_down"] = {'trigger_note': True,
+                                                'chord': '1, 5, 11',
+                                                'start': True}
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_e or \
@@ -233,21 +241,30 @@ class Helm:
                         helm_globals.rotation_ring = "mode"
 
                     if event.key == pygame.K_q:
-                        helm_globals.notes_hanging = False
+                        helm_globals.notes_latched = False
 
-                    if not helm_globals.notes_hanging:
+                    if not helm_globals.notes_latched:
                         if event.key == pygame.K_a:
-                            events["chord_definitions[0]_stop"] = True
+                            events["a_up"] = {'trigger_note': True,
+                                              'chord': '1', 'stop': True}
                         if event.key == pygame.K_s:
-                            events["chord_definitions[1]_stop"] = True
+                            events["s_up"] = {'trigger_note': True,
+                                              'chord': '1, 5', 'stop': True}
                         if event.key == pygame.K_d:
-                            events["chord_definitions[2]_stop"] = True
+                            events["d_up"] = {'trigger_note': True,
+                                              'chord': '1, 3, 5',
+                                              'stop': True}
                         if event.key == pygame.K_z:
-                            events["chord_definitions[3]_stop"] = True
+                            events["z_up"] = {'trigger_note': True,
+                                              'chord': '1, 5, 7',
+                                              'stop': True}
                         if event.key == pygame.K_x:
-                            events["chord_definitions[4]_stop"] = True
+                            events["x_up"] = {'trigger_note': True,
+                                              'chord': '5, 9', 'stop': True}
                         if event.key == pygame.K_c:
-                            events["chord_definitions[5]_stop"] = True
+                            events["c_up"] = {'trigger_note': True,
+                                              'chord': '1, 5, 11',
+                                              'stop': True}
 
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)

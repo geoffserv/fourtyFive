@@ -104,112 +104,26 @@ class ChordControl(ControlSystem):
             # Obviously very tediously repeated code here,
             # ok it's already getting out of control XD fixme
 
-            if event == "chord_definitions[0]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['1'])
-                helm_globals.key.notes_on.extend(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions[1]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['1, 5'])
-                helm_globals.key.notes_on.extend(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions[2]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['1, 3, 5'])
-                helm_globals.key.notes_on.extend(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions[3]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['1, 5, 7'])
-                helm_globals.key.notes_on.extend(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions[4]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['5, 9'])
-                helm_globals.key.notes_on.extend(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions[5]_start":
-                self.needs_rendering = True
-                startnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                              chord_definitions
-                                                              ['1, 5, 11'])
-                helm_globals.key.notes_on.extends(startnotes)
-                helm_globals.midi.notes_on(helm_globals.key.notes_on)
-
-            if event == "chord_definitions_all_stop":
-                self.needs_rendering = True
-                helm_globals.midi.all_notes_off()
-                helm_globals.key.notes_on = []
-
-            if event == "chord_definitions[0]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['1'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
-
-            if event == "chord_definitions[1]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['1, 5'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
-
-            if event == "chord_definitions[2]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['1, 3, 5'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
-
-            if event == "chord_definitions[3]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['1, 5, 7'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
-
-            if event == "chord_definitions[4]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['5, 9'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
-
-            if event == "chord_definitions[5]_stop":
-                self.needs_rendering = True
-                stopnotes = helm_globals.key.calculate_chord(helm_globals.
-                                                             chord_definitions
-                                                             ['1, 5, 11'])
-                for note in stopnotes:
-                    helm_globals.key.notes_on.remove(note)
-                helm_globals.midi.notes_off(stopnotes)
+            if 'trigger_note' in events[event] and \
+                    events[event]['trigger_note']:
+                # Calculate chord formula in form of key.notes index list
+                notes_trigger = helm_globals.key.calculate_chord(
+                    helm_globals.chord_definitions[events[event]['chord']])
+                print("notes_effected:", notes_trigger)
+                if 'start' in events[event] and events[event]['start']:
+                    self.needs_rendering = True
+                    print("event:", event)
+                    print("events[event]:", events[event])
+                    print("events[event]['chord']:", events[event]['chord'])
+                    helm_globals.midi.notes_trigger(mode="on",
+                                                    notes=notes_trigger)
+                if 'stop' in events[event] and events[event]['stop']:
+                    self.needs_rendering = True
+                    print("event:", event)
+                    print("events[event]:", events[event])
+                    print("events[event]['chord']:", events[event]['chord'])
+                    helm_globals.midi.notes_trigger(mode="off",
+                                                    notes=notes_trigger)
 
     def draw_squares(self, shape, color, width, chord_def):
         for note in helm_globals.key.calculate_chord(chord_def):
@@ -288,28 +202,39 @@ class WheelControl(ControlSystem):
             self.rotate_iterator = direction
 
             print("self.rotate_offset:", self.rotate_offset,
-                "rotate_offset + rotate_amount:", 
-                self.rotate_offset + (self.rotate_amount * self.rotate_iterator), 
-                "mod 360/12:", (self.rotate_offset + (self.rotate_iterator * self.rotate_amount)) 
-                    % (360/12),
-                "self.rotate_amount:", self.rotate_amount,
-                "self.rotate_iterator:", self.rotate_iterator)
+                  "rotate_offset + rotate_amount:",
+                  self.rotate_offset +
+                  (self.rotate_amount * self.rotate_iterator),
+                  "mod 360/12:",
+                  (self.rotate_offset +
+                   (self.rotate_iterator * self.rotate_amount)) % (360/12),
+                  "self.rotate_amount:", self.rotate_amount,
+                  "self.rotate_iterator:", self.rotate_iterator)
 
+            # Edge detection around the wheel
+            # With the current rotate_amount (360/36),
+            # If the rotation iterator is 1 and the abs value of the rotation
+            #   amt mod (360/12) reaches 20, time to rotate the key.
+            # If the rotation iterator is -1 and the abs value of the rotation
+            #   amt mod (360/12) reaches 10, time to rotate as well.
             if ((self.rotate_iterator == 1) and
-                (abs((self.rotate_offset + (self.rotate_amount * self.rotate_iterator)) 
-                    % (360/12)) == 20)) or \
+                (abs((self.rotate_offset +
+                 (self.rotate_amount * self.rotate_iterator))
+                 % (360/12)) == 20)) or \
                 ((self.rotate_iterator == -1) and
-                (abs((self.rotate_offset + (self.rotate_amount * self.rotate_iterator)) 
-                    % (360/12)) == 10)):
-                print("ROTATE KEY")
+                 (abs((self.rotate_offset +
+                  (self.rotate_amount * self.rotate_iterator))
+                  % (360/12)) == 10)):
 
                 # Set the key index as we turn around
-                # Subtract because of the rotating-disk mechanic, the newly chosen
+                # Subtract because of the rotating-disk mechanic, the chosen
                 # option is OPPOSITE direction of the disk turning
-                helm_globals.key.rotate_key(add_by=(-1 * self.rotate_iterator))
+                helm_globals.key.rotate_key(add_by=(-1 *
+                                                    self.rotate_iterator))
 
                 # Change the chord, too
-                helm_globals.key.rotate_chord(add_by=(-1 * self.rotate_iterator))
+                helm_globals.key.rotate_chord(add_by=(-1
+                                                      * self.rotate_iterator))
 
     def rotate_chord(self, direction):
         # Set direction to 1 for clockwise rotation
@@ -317,7 +242,7 @@ class WheelControl(ControlSystem):
         # It's an integer of degrees added to the overall rotation
         # If this is called and there is no rotation currently, begin
         #   rotation immediately
-        # TODO use a dict to track the whole wheel state and all rotate steps
+
         if (self.rotate_steps_chord == 0) or \
                 (self.rotate_iterator_chord != direction):
             self.rotate_steps_chord = int(self.rotate_amount /
@@ -326,12 +251,13 @@ class WheelControl(ControlSystem):
             self.rotate_iterator_chord = direction
 
             if ((self.rotate_iterator_chord == 1) and
-                (abs((self.rotate_offset_chord + (self.rotate_amount * self.rotate_iterator_chord)) 
-                    % (360/12)) == 20)) or \
+                (abs((self.rotate_offset_chord +
+                      (self.rotate_amount * self.rotate_iterator_chord))
+                     % (360/12)) == 20)) or \
                 ((self.rotate_iterator_chord == -1) and
-                (abs((self.rotate_offset_chord + (self.rotate_amount * self.rotate_iterator_chord)) 
-                    % (360/12)) == 10)):
-                print("ROTATE CHORD")
+                 (abs((self.rotate_offset_chord +
+                       (self.rotate_amount * self.rotate_iterator_chord))
+                      % (360/12)) == 10)):
 
                 # Change the mode
                 helm_globals.key.rotate_key_mode(
@@ -349,29 +275,45 @@ class WheelControl(ControlSystem):
                 # if helm_globals.chord_position == 6:
                 if abs((helm_globals.key.current_chord_root -
                         helm_globals.key.current_key) % 12) == 6:
-                    helm_globals.key.rotate_chord(set_to=(11 + helm_globals.key.
-                                                          current_key))
+                    helm_globals.key.rotate_chord(set_to=(11 + helm_globals.
+                                                          key.current_key))
                     self.rotate_offset_chord += 150
 
                 if abs((helm_globals.key.current_chord_root -
                         helm_globals.key.current_key) % 12) == 10:
-                    helm_globals.key.rotate_chord(set_to=(5 + helm_globals.key.
-                                                          current_key))
+                    helm_globals.key.rotate_chord(set_to=(5 + helm_globals.
+                                                          key.current_key))
                     self.rotate_offset_chord -= 150
 
     def update_control(self, events):
         self.needs_rendering = False
-
         # Handle the dict of events passed in for this update
         for event in events:
-            if event == "key_clockwise":
-                self.rotate_wheel(1)
-            if event == "key_counterclockwise":
-                self.rotate_wheel(-1)
-            if event == "chord_clockwise":
-                self.rotate_chord(-1)
-            if event == "chord_counterclockwise":
-                self.rotate_chord(1)
+
+            if 'trigger_note' in events[event] and \
+                    events[event]['trigger_note']:
+                notes_effected = helm_globals.key.calculate_chord(
+                    helm_globals.chord_definitions[events[event]['chord']])
+                if 'start' in events[event] and events[event]['start']:
+                    self.needs_rendering = True
+                    helm_globals.midi.notes_trigger(mode="on",
+                                                    notes=notes_effected)
+                if 'stop' in events[event] and events[event]['stop']:
+                    self.needs_rendering = True
+                    helm_globals.midi.notes_trigger(mode="off",
+                                                    notes=notes_effected)
+
+            if 'rotate' in events[event] and events[event]['rotate']:
+                if events[event]['wheel'] == "key":
+                    if events[event]['dir'] == "cw":
+                        self.rotate_wheel(1)
+                    if events[event]['dir'] == "ccw":
+                        self.rotate_wheel(-1)
+                if events[event]['wheel'] == "chord":
+                    if events[event]['dir'] == "cw":
+                        self.rotate_chord(1)
+                    if events[event]['dir'] == "ccw":
+                        self.rotate_chord(-1)
 
         # Perform any animation steps needed for this update
         if self.rotate_steps > 0:
