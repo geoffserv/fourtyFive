@@ -6,20 +6,62 @@
 
 import pygame
 from pygame.locals import *
-
 import helm_fonts
 from helm_controls import WheelControl, ChordControl
 import helm_globals
-
-if helm_globals.using_griffin_powermate:
-    from dqpypowermate import Powermate
+import helm_midi
+import configparser
 
 
 class Helm:
-    def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True):
+    def __init__(self, canvas_width=1920, canvas_height=1080, init_gfx=True,
+                 configfile="helm.cfg"):
+
+        self.fullscreen = False
+
+        # By default this expects helm.cfg in the same directory as this script
+        # In the format (with whichever appropriate values you like):
+        #
+        # [helm]
+        # powermate = False
+        # midi = False
+
+        config = configparser.ConfigParser()
+
+        if config.read(configfile):
+            try:
+                helm_globals.using_griffin_powermate = \
+                    config['helm']['powermate']
+                # Convert from string
+                if helm_globals.using_griffin_powermate == "True":
+                    helm_globals.using_griffin_powermate = True
+                else:
+                    helm_globals.using_griffin_powermate = False
+                helm_globals.using_midi = \
+                    config['helm']['midi']
+                if helm_globals.using_midi == "True":
+                    helm_globals.using_midi = True
+                else:
+                    helm_globals.using_midi = False
+                self.fullscreen = config['helm']['fullscreen']
+                if self.fullscreen == "True":
+                    self.fullscreen = True
+                else:
+                    self.fullscreen = False
+
+            except configparser.Error:
+                print("Config file error.  Maintaining defaults")
+        else:
+            print("Could not open configfile.  Maintaining defaults")
 
         self.powermate = None
         if helm_globals.using_griffin_powermate:
+            try:
+                # Import here, because this module is un-installable on any
+                # OS other than Linux
+                from pypowermate import Powermate
+            except ImportError:
+                pass
             powermate_path = "/dev/input/by-id/usb"
             powermate_path += "-"
             powermate_path += "Griffin_Technology__Inc."
@@ -29,11 +71,11 @@ class Helm:
             powermate_path += "event-if00"
             self.powermate = Powermate(powermate_path)
 
+        helm_globals.midi = helm_midi.Midi()
+
         # Graphics attributes
         # Clock, for tracking events and frame rate
         self.clock = pygame.time.Clock()
-
-        self.fullscreen = False
 
         self.canvas_width = canvas_width
         self.canvas_height = canvas_height
@@ -115,7 +157,7 @@ class Helm:
 
             if needs_rendering:
                 # First, draw the screen:
-                # Loop through each controlSystem added to the controlSurfaces list
+                # Loop through each controlSystem added to the controlSurfaces
                 for controlSurface in self.controlSurfaces:
                     # The drawControl method should update the control's visual
                     # elements and
@@ -137,29 +179,112 @@ class Helm:
                 if event.type == QUIT:  # If the window 'close' button...
                     self.running = False
                 if event.type == pygame.KEYDOWN:
+                    # Hold 'e' to rotate the "key" ring
+                    if event.key == pygame.K_e:
+                        helm_globals.rotation_ring = "key"
+
+                    # Hold 'w' to rotate both rings in unison
+                    if event.key == pygame.K_w:
+                        helm_globals.rotation_ring = "all"
+
+                    # Hold 'q' to hang notes: preventing note offs
+                    if event.key == pygame.K_q:
+                        helm_globals.notes_latched = True
+
+                    # esc to quit
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
+
                     if event.key == pygame.K_COMMA:
-                        events["key_clockwise"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events[",_down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'ccw'}
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events[",_down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'cw'}
                     if event.key == pygame.K_PERIOD:
-                        events["key_counterclockwise"] = True
-                    if event.key == pygame.K_q:
-                        events["chord_clockwise"] = True
-                    if event.key == pygame.K_e:
-                        events["chord_counterclockwise"] = True
-                    if event.key == pygame.K_a:
-                        events["chord_majortriad_start"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["._down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'cw'}
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["._down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'ccw'}
+
+                    if not helm_globals.notes_latched:
+                        if event.key == pygame.K_a:
+                            events["a_down"] = {'trigger_note': True,
+                                                'chord': '1', 'start': True}
+                        if event.key == pygame.K_s:
+                            events["s_down"] = {'trigger_note': True,
+                                                'chord': '1, 5', 'start': True}
+                        if event.key == pygame.K_d:
+                            events["d_down"] = {'trigger_note': True,
+                                                'chord': '1, 3, 5',
+                                                'start': True}
+                        if event.key == pygame.K_z:
+                            events["z_down"] = {'trigger_note': True,
+                                                'chord': '1, 5, 7',
+                                                'start': True}
+                        if event.key == pygame.K_x:
+                            events["x_down"] = {'trigger_note': True,
+                                                'chord': '5, 9', 'start': True}
+                        if event.key == pygame.K_c:
+                            events["c_down"] = {'trigger_note': True,
+                                                'chord': '1, 5, 11',
+                                                'start': True}
+
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_a:
-                        events["chord_majortriad_stop"] = True
+                    if event.key == pygame.K_e or \
+                       event.key == pygame.K_w:
+                        helm_globals.rotation_ring = "mode"
+
+                    if event.key == pygame.K_q:
+                        helm_globals.notes_latched = False
+
+                    if not helm_globals.notes_latched:
+                        if event.key == pygame.K_a:
+                            events["a_up"] = {'trigger_note': True,
+                                              'chord': '1', 'stop': True}
+                        if event.key == pygame.K_s:
+                            events["s_up"] = {'trigger_note': True,
+                                              'chord': '1, 5', 'stop': True}
+                        if event.key == pygame.K_d:
+                            events["d_up"] = {'trigger_note': True,
+                                              'chord': '1, 3, 5',
+                                              'stop': True}
+                        if event.key == pygame.K_z:
+                            events["z_up"] = {'trigger_note': True,
+                                              'chord': '1, 5, 7',
+                                              'stop': True}
+                        if event.key == pygame.K_x:
+                            events["x_up"] = {'trigger_note': True,
+                                              'chord': '5, 9', 'stop': True}
+                        if event.key == pygame.K_c:
+                            events["c_up"] = {'trigger_note': True,
+                                              'chord': '1, 5, 11',
+                                              'stop': True}
 
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
                 if event:
-                    if event[2] == 1:
-                        events["K_a"] = True
                     if event[2] == -1:
-                        events["K_d"] = True
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events[",_down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'ccw'}
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events[",_down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'ccw'}
+                    if event[2] == 1:
+                        if helm_globals.rotation_ring in ("key", "all"):
+                            events["._down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'cw'}
+                        if helm_globals.rotation_ring in ("mode", "all"):
+                            events["._down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'cw'}
 
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(

@@ -11,3 +11,5 @@ pygame==2.0.1
 pyparsing==2.4.7
 pytest==6.2.5
 toml==0.10.2
+configparser~=5.0.2
+mido~=1.2.10

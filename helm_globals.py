@@ -7,6 +7,10 @@
 # Win / Mac: set to False and no powermate for you :c
 using_griffin_powermate = False
 
+# midi support
+using_midi = False
+midi = None
+
 # If I try to render things like text, corners of polygons, etc right up
 # against the edge of a surface, then there is often clipping.  So, track
 # a global canvas_margin to offset all coordinate systems and give some
@@ -44,6 +48,9 @@ class Key(object):
         self.current_key = 0
         self.current_chord_root = 0
         self.current_key_mode = 0
+        self.notes_on = []  # List containing key.notes indices currently
+        # playing 0-11
+
         self.notes = [
             {'noteName': 'C', 'sharpName': 'C', 'kbNum': 0},
             {'noteName': 'G', 'sharpName': 'G', 'kbNum': 7},
@@ -69,21 +76,11 @@ class Key(object):
             self.diatonic.append(
                 (self.current_key + i) % 12
             )
-        print("Diatonic: ", self.diatonic)
-        print("Diatonic Notes: ", end="")
-        for note in self.diatonic:
-            print(self.notes[note]['noteName'], end=", ")
-        print("")
 
     def update_chord_scale(self):
         self.chord_scale = []
         for i in range(self.current_key_mode, self.current_key_mode + 7):
             self.chord_scale.append(self.diatonic[i % 7])
-        print("Chord Scale: ", self.chord_scale)
-        print("Chord Scale Notes: ", end="")
-        for note in self.chord_scale:
-            print(self.notes[note]['noteName'], end=", ")
-        print("")
 
     def rotate_key(self, add_by=0):
         self.current_key += add_by
@@ -95,30 +92,21 @@ class Key(object):
         self.current_key_mode = self.current_key_mode % 7
 
     def rotate_chord(self, add_by=0, set_to=None):
-        print("* chord - add_by:", add_by, " self.current_chord_root:",
-              self.current_chord_root, " self.current_key_mode:",
-              self.current_key_mode)
         self.current_chord_root += add_by
-        print("* chord - added now self.current_chord_root:",
-              self.current_chord_root)
 
         if set_to is not None:
             self.current_chord_root = set_to
 
         self.current_chord_root = self.current_chord_root % 12  # Rollover ...
-        print("* chord - mod 12 self.current_chord_root:",
-              self.current_chord_root)
 
         self.update_chord_scale()
 
     def calculate_chord(self, chord_def):
         chord = []
         for note in chord_def:
-            print("self.chord_scale[note]:",
-                  self.chord_scale[chord_slices_dict[note]])
             chord.append(self.chord_scale[chord_slices_dict[note]])
-        print("chord:", chord)
         return chord
+
 
 key = Key()
 
@@ -142,16 +130,15 @@ chord_slices_dict = {1: 0,
 chord_definitions = {'1': (1, ),
                      '1, 5': (1, 5),
                      '1, 3, 5': (1, 3, 5),
-                     '1, 5, 7': (1, 3, 7),
+                     '1, 5, 7': (1, 5, 7),
                      '5, 9': (5, 2),
                      '1, 5, 11': (1, 5, 4)}
-# chord_definitions = {'1, 3, 5': (1, 3, 5),
-#                           '1, 3, 5, 6': (1, 3, 5, 6),
-#                           '1, 3, 5, 7': (1, 3, 5, 7),
-#                           '1, 3, 5, 9': (1, 3, 5, 2),
-#                           '1, 3, 5, 7, 9': (1, 3, 5, 7, 2),
-#                           '1, 5, 7, 9, 11': (1, 5, 7, 2, 4)}
 
+# The main module handles input, but some of the other modules
+# may need to know some input states:
+rotation_ring = "mode"  # Which ring is under control: "key", "mode", "all"
+
+notes_latched = False  # When true, don't stop notes on keyUps
 
 # Define some colors for convenience and readability
 color_black = (0, 0, 0)
