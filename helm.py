@@ -271,14 +271,20 @@ class Helm:
                 if event:
                     if event[2] == -1:
                         if helm_globals.rotation_ring in ("key", "all"):
-                            events["key_counterclockwise"] = True
+                            events[",_down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'ccw'}
                         if helm_globals.rotation_ring in ("mode", "all"):
-                            events["chord_clockwise"] = True
+                            events[",_down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'cw'}
                     if event[2] == 1:
                         if helm_globals.rotation_ring in ("key", "all"):
-                            events["key_clockwise"] = True
+                            events["._down_1"] = {'rotate': True,
+                                                  'wheel': 'key', 'dir': 'cw'}
                         if helm_globals.rotation_ring in ("mode", "all"):
-                            events["chord_counterclockwise"] = True
+                            events["._down_2"] = {'rotate': True,
+                                                  'wheel': 'chord',
+                                                  'dir': 'ccw'}
 
             for controlSurface in self.controlSurfaces:
                 controlSurface.update_control(
