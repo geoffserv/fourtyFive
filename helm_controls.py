@@ -298,8 +298,12 @@ class WheelControl(ControlSystem):
                     self.needs_rendering = True
                     helm_globals.midi.notes_trigger(mode="on",
                                                     notes=notes_effected)
+                    helm_globals.midi.notes_prior = notes_effected
                 if 'stop' in events[event] and events[event]['stop']:
                     self.needs_rendering = True
+                    # Turn off the currently selected notes, plus the prior
+                    # fired notes:
+                    notes_effected.extend(helm_globals.midi.notes_prior)
                     helm_globals.midi.notes_trigger(mode="off",
                                                     notes=notes_effected)
 

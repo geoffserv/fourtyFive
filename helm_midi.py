@@ -22,6 +22,10 @@ class Midi(object):
         # c0 = 24
         self.c0_offset = 24
 
+        # Prior fired notes, help send offs to prior selected notes when
+        # the keys have been held
+        self.notes_prior = []
+
     def notes_trigger(self, mode="off", notes=None):
         # Notes is arriving as form of key.notes index list
         print("mode:", mode, "notes:", notes)
