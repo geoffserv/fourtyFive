@@ -213,18 +213,19 @@ class Helm:
                     # if event.key == pygame.K_e:
                     #     events["chord_counterclockwise"] = True
 
-                    if event.key == pygame.K_a:
-                        events["chord_definitions[0]_start"] = True
-                    if event.key == pygame.K_s:
-                        events["chord_definitions[1]_start"] = True
-                    if event.key == pygame.K_d:
-                        events["chord_definitions[2]_start"] = True
-                    if event.key == pygame.K_z:
-                        events["chord_definitions[3]_start"] = True
-                    if event.key == pygame.K_x:
-                        events["chord_definitions[4]_start"] = True
-                    if event.key == pygame.K_c:
-                        events["chord_definitions[5]_start"] = True
+                    if not helm_globals.notes_hanging:
+                        if event.key == pygame.K_a:
+                            events["chord_definitions[0]_start"] = True
+                        if event.key == pygame.K_s:
+                            events["chord_definitions[1]_start"] = True
+                        if event.key == pygame.K_d:
+                            events["chord_definitions[2]_start"] = True
+                        if event.key == pygame.K_z:
+                            events["chord_definitions[3]_start"] = True
+                        if event.key == pygame.K_x:
+                            events["chord_definitions[4]_start"] = True
+                        if event.key == pygame.K_c:
+                            events["chord_definitions[5]_start"] = True
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_e or \
