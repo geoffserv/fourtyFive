@@ -102,61 +102,114 @@ class ChordControl(ControlSystem):
         # Handle the dict of events passed in for this update
         for event in events:
             # Obviously very tediously repeated code here,
-            # But doing it for a reason: clarity and custom capability with
-            # button bindings and actions.  Can condense down later.
+            # ok it's already getting out of control XD fixme
 
             if event == "chord_definitions[0]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['1'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['1'])
+                helm_globals.key.notes_on.extend(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[1]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['1, 5'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['1, 5'])
+                helm_globals.key.notes_on.extend(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[2]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['1, 3, 5'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['1, 3, 5'])
+                helm_globals.key.notes_on.extend(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[3]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['1, 5, 7'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['1, 5, 7'])
+                helm_globals.key.notes_on.extend(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[4]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['5, 9'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['5, 9'])
+                helm_globals.key.notes_on.extend(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
             if event == "chord_definitions[5]_start":
                 self.needs_rendering = True
-                helm_globals.key.notes_on = \
-                    helm_globals.key.calculate_chord(helm_globals.
-                                                     chord_definitions
-                                                     ['1, 5, 11'])
+                startnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                              chord_definitions
+                                                              ['1, 5, 11'])
+                helm_globals.key.notes_on.extends(startnotes)
                 helm_globals.midi.notes_on(helm_globals.key.notes_on)
 
-            if event == "chord_definitions_stop":
+            if event == "chord_definitions_all_stop":
                 self.needs_rendering = True
-                helm_globals.midi.notes_off(helm_globals.key.notes_on)
+                helm_globals.midi.all_notes_off()
                 helm_globals.key.notes_on = []
+
+            if event == "chord_definitions[0]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['1'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
+
+            if event == "chord_definitions[1]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['1, 5'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
+
+            if event == "chord_definitions[2]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['1, 3, 5'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
+
+            if event == "chord_definitions[3]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['1, 5, 7'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
+
+            if event == "chord_definitions[4]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['5, 9'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
+
+            if event == "chord_definitions[5]_stop":
+                self.needs_rendering = True
+                stopnotes = helm_globals.key.calculate_chord(helm_globals.
+                                                             chord_definitions
+                                                             ['1, 5, 11'])
+                for note in stopnotes:
+                    helm_globals.key.notes_on.remove(note)
+                helm_globals.midi.notes_off(stopnotes)
 
     def draw_squares(self, shape, color, width, chord_def):
         for note in helm_globals.key.calculate_chord(chord_def):

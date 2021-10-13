@@ -47,3 +47,7 @@ class Midi(object):
                                    note=midi_note,
                                    velocity=0)  # 1 - 127
                 self.outport.send(msg)
+
+    def all_notes_off(self):
+        if helm_globals.using_midi:
+            self.outport.reset()

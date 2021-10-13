@@ -182,6 +182,9 @@ class Helm:
                     # Hold 'e' to rotate the "key" ring
                     if event.key == pygame.K_e:
                         helm_globals.rotation_ring = "key"
+                        # if 'q' is also being held, send an all-notes-off:
+                        if helm_globals.notes_hanging:
+                            events["chord_definitions_all_stop"] = True
 
                     # Hold 'w' to rotate both rings in unison
                     if event.key == pygame.K_w:
@@ -231,14 +234,19 @@ class Helm:
                     if event.key == pygame.K_q:
                         helm_globals.notes_hanging = False
 
-                    if not helm_globals.notes_hanging and \
-                        (event.key == pygame.K_a or
-                         event.key == pygame.K_s or
-                         event.key == pygame.K_d or
-                         event.key == pygame.K_z or
-                         event.key == pygame.K_x or
-                         event.key == pygame.K_c):
-                        events["chord_definitions_stop"] = True
+                    if not helm_globals.notes_hanging:
+                        if event.key == pygame.K_a:
+                            events["chord_definitions[0]_stop"] = True
+                        if event.key == pygame.K_s:
+                            events["chord_definitions[1]_stop"] = True
+                        if event.key == pygame.K_d:
+                            events["chord_definitions[2]_stop"] = True
+                        if event.key == pygame.K_z:
+                            events["chord_definitions[3]_stop"] = True
+                        if event.key == pygame.K_x:
+                            events["chord_definitions[4]_stop"] = True
+                        if event.key == pygame.K_c:
+                            events["chord_definitions[5]_stop"] = True
 
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
