@@ -218,21 +218,26 @@ class Helm:
                                                 'chord': '1', 'start': True}
                         if event.key == pygame.K_s:
                             events["s_down"] = {'trigger_note': True,
-                                                'chord': '1, 5', 'start': True}
+                                                'chord': '3', 'start': True}
                         if event.key == pygame.K_d:
-                            events["d_down"] = {'trigger_note': True,
-                                                'chord': '1, 3, 5',
-                                                'start': True}
+                            if helm_globals.rotation_ring == "key":
+                                events["d_down"] = {'trigger_note': True,
+                                                    'chord': '7',
+                                                    'start': True}
+                            else:
+                                events["d_down"] = {'trigger_note': True,
+                                                    'chord': '5',
+                                                    'start': True}
                         if event.key == pygame.K_z:
                             events["z_down"] = {'trigger_note': True,
-                                                'chord': '1, 5, 7',
+                                                'chord': '2',
                                                 'start': True}
                         if event.key == pygame.K_x:
                             events["x_down"] = {'trigger_note': True,
-                                                'chord': '5, 9', 'start': True}
+                                                'chord': '4', 'start': True}
                         if event.key == pygame.K_c:
                             events["c_down"] = {'trigger_note': True,
-                                                'chord': '1, 5, 11',
+                                                'chord': '6',
                                                 'start': True}
 
                 if event.type == pygame.KEYUP:
@@ -249,21 +254,26 @@ class Helm:
                                               'chord': '1', 'stop': True}
                         if event.key == pygame.K_s:
                             events["s_up"] = {'trigger_note': True,
-                                              'chord': '1, 5', 'stop': True}
+                                              'chord': '3', 'stop': True}
                         if event.key == pygame.K_d:
-                            events["d_up"] = {'trigger_note': True,
-                                              'chord': '1, 3, 5',
-                                              'stop': True}
+                            if helm_globals.rotation_ring == "key":
+                                events["d_up"] = {'trigger_note': True,
+                                                  'chord': '7',
+                                                  'stop': True}
+                            else:
+                                events["d_up"] = {'trigger_note': True,
+                                                  'chord': '5',
+                                                  'stop': True}
                         if event.key == pygame.K_z:
                             events["z_up"] = {'trigger_note': True,
-                                              'chord': '1, 5, 7',
+                                              'chord': '2',
                                               'stop': True}
                         if event.key == pygame.K_x:
                             events["x_up"] = {'trigger_note': True,
-                                              'chord': '5, 9', 'stop': True}
+                                              'chord': '4', 'stop': True}
                         if event.key == pygame.K_c:
                             events["c_up"] = {'trigger_note': True,
-                                              'chord': '1, 5, 11',
+                                              'chord': '6',
                                               'stop': True}
 
             if helm_globals.using_griffin_powermate:

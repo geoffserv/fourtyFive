@@ -127,12 +127,20 @@ chord_slices_dict = {1: 0,
                      6: 3,
                      7: 5}
 
+# chord_definitions = {'1': (1, ),
+#                      '1, 5': (1, 5),
+#                      '1, 3, 5': (1, 3, 5),
+#                      '1, 5, 7': (1, 5, 7),
+#                      '5, 9': (5, 2),
+#                      '1, 5, 11': (1, 5, 4)}
+
 chord_definitions = {'1': (1, ),
-                     '1, 5': (1, 5),
-                     '1, 3, 5': (1, 3, 5),
-                     '1, 5, 7': (1, 5, 7),
-                     '5, 9': (5, 2),
-                     '1, 5, 11': (1, 5, 4)}
+                     '3': (2, ),
+                     '5': (5, ),
+                     '7': (7, ),
+                     '2': (2, ),
+                     '4': (4, ),
+                     '6': (6, )}
 
 # The main module handles input, but some of the other modules
 # may need to know some input states:

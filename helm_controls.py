@@ -101,9 +101,6 @@ class ChordControl(ControlSystem):
         self.needs_rendering = False
         # Handle the dict of events passed in for this update
         for event in events:
-            # Obviously very tediously repeated code here,
-            # ok it's already getting out of control XD fixme
-
             if 'trigger_note' in events[event] and \
                     events[event]['trigger_note']:
                 # Calculate chord formula in form of key.notes index list
