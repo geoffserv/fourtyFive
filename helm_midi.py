@@ -26,9 +26,17 @@ class Midi(object):
         # the keys have been held
         self.notes_prior = []
 
+        # Store prior latched notes so we can turn them off when starting
+        # a new chord
+        self.notes_latched = []
+
     def notes_trigger(self, mode="off", notes=None):
         # Notes is arriving as form of key.notes index list
         print("mode:", mode, "notes:", notes)
+
+        if (mode == "on") and len(self.notes_latched) > 0:
+            self.notes_trigger(mode="off", notes=self.notes_latched)
+            self.notes_latched = []
 
         for note in notes:
             # Calculate 'real' midi note number by adding c0 offset,
@@ -51,6 +59,9 @@ class Midi(object):
                 fire = True
                 helm_globals.key.notes_on.append(note)
 
+                if helm_globals.notes_latched:
+                    self.notes_latched.append(note)
+
             # Send a MIDI message if the mode is "off" and this
             # note is already currently playing:
             if (mode == "off") and note in helm_globals.key.notes_on:
@@ -65,3 +76,6 @@ class Midi(object):
                                        note=midi_note,
                                        velocity=velocity)  # 1 - 127
                     self.outport.send(msg)
+
+
+
