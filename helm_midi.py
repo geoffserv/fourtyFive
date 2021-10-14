@@ -36,6 +36,7 @@ class Midi(object):
 
         if (mode == "on") and len(self.notes_latched) > 0:
             self.notes_trigger(mode="off", notes=self.notes_latched)
+            print("unlatching:", self.notes_latched)
             self.notes_latched = []
 
         for note in notes:
@@ -60,6 +61,7 @@ class Midi(object):
                 helm_globals.key.notes_on.append(note)
 
                 if helm_globals.notes_latched:
+                    print("latched:", note)
                     self.notes_latched.append(note)
 
             # Send a MIDI message if the mode is "off" and this
