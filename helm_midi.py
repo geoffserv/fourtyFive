@@ -4,6 +4,7 @@ import helm_globals
 
 class Midi(object):
     def __init__(self):
+        self.inport_clock_name = 'wavestate:wavestate MIDI 1 20:0'
         self.inport_name = 'wavestate:wavestate MIDI 1 20:0'
         self.outport_name = 'wavestate:wavestate MIDI 1 20:0'
 
@@ -16,7 +17,9 @@ class Midi(object):
             print(mido.get_input_names())  # To list the input ports
             self.inport = mido.open_input(self.inport_name, autoreset=True)
             self.outport = mido.open_output(self.outport_name, autoreset=True)
-
+            if helm_globals.using_midi_clock:
+                self.inport_clock = \
+                    mido.open_input(self.inport_clock_name, autoreset=True)
         self.octave = 2
 
         # c0 = 24
