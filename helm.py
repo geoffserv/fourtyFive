@@ -48,12 +48,12 @@ class Helm:
                     self.fullscreen = True
                 else:
                     self.fullscreen = False
-                self.helm_globals.using_midi_clock = \
+                helm_globals.using_midi_clock = \
                     config['helm']['midi_clock']
-                if self.using_midi_clock == "True":
-                    self.using_midi_clock = True
+                if helm_globals.using_midi_clock == "True":
+                    helm_globals.using_midi_clock = True
                 else:
-                    self.using_midi_clock = False
+                    helm_globals.using_midi_clock = False
 
             except configparser.Error:
                 print("Config file error.  Maintaining defaults")
