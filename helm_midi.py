@@ -30,6 +30,12 @@ class Midi(object):
         # a new chord
         self.notes_latched = []
 
+    def latch(self):
+        if helm_globals.notes_latched:
+            for note in helm_globals.key.notes_on:
+                print("latched:", note)
+                self.notes_latched.append(note)
+
     def notes_trigger(self, mode="off", notes=None):
         # Notes is arriving as form of key.notes index list
         print("mode:", mode, "notes:", notes)
@@ -59,10 +65,6 @@ class Midi(object):
             if (mode == "on") and note not in helm_globals.key.notes_on:
                 fire = True
                 helm_globals.key.notes_on.append(note)
-
-                if helm_globals.notes_latched:
-                    print("latched:", note)
-                    self.notes_latched.append(note)
 
             # Send a MIDI message if the mode is "off" and this
             # note is already currently playing:

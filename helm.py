@@ -275,6 +275,10 @@ class Helm:
                             events["c_up"] = {'trigger_note': True,
                                               'chord': '6',
                                               'stop': True}
+                    else:
+                        # In this case the latch key is held, record the
+                        # latched notes
+                        helm_globals.midi.latch()
 
             if helm_globals.using_griffin_powermate:
                 event = self.powermate.read_event(timeout=0)
