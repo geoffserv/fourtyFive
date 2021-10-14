@@ -218,7 +218,7 @@ class Helm:
                                                 'chord': '1', 'start': True}
                         if event.key == pygame.K_s:
                             events["s_down"] = {'trigger_note': True,
-                                                'chord': '3', 'start': True}
+                                                'chord': '1, 5', 'start': True}
                         if event.key == pygame.K_d:
                             if helm_globals.rotation_ring == "key":
                                 events["d_down"] = {'trigger_note': True,
@@ -226,7 +226,7 @@ class Helm:
                                                     'start': True}
                             else:
                                 events["d_down"] = {'trigger_note': True,
-                                                    'chord': '5',
+                                                    'chord': '1, 3, 5',
                                                     'start': True}
                         if event.key == pygame.K_z:
                             events["z_down"] = {'trigger_note': True,
@@ -254,7 +254,7 @@ class Helm:
                                               'chord': '1', 'stop': True}
                         if event.key == pygame.K_s:
                             events["s_up"] = {'trigger_note': True,
-                                              'chord': '3', 'stop': True}
+                                              'chord': '1, 5', 'stop': True}
                         if event.key == pygame.K_d:
                             if helm_globals.rotation_ring == "key":
                                 events["d_up"] = {'trigger_note': True,
@@ -262,7 +262,7 @@ class Helm:
                                                   'stop': True}
                             else:
                                 events["d_up"] = {'trigger_note': True,
-                                                  'chord': '5',
+                                                  'chord': '1, 3, 5',
                                                   'stop': True}
                         if event.key == pygame.K_z:
                             events["z_up"] = {'trigger_note': True,

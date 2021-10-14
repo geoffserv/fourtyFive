@@ -92,7 +92,7 @@ class ChordControl(ControlSystem):
         # Run superclass __init__ to inherit all of those instance attributes
         super(self.__class__, self).__init__(**kwargs)
 
-        self.canvas_height = 400
+        self.canvas_height = 600
         self.surface = pygame.Surface(
             (int(self.canvas_width + (helm_globals.canvas_margin * 2)),
              int(self.canvas_height + (helm_globals.canvas_margin * 2))))
