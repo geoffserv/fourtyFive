@@ -310,10 +310,19 @@ class Helm:
                 controlSurface.update_control(
                     events)  # update control attributes with a dict of events
 
+            # ... and, forward along any MIDI messages received at the
+            # secondary MIDI interface, if found and enabled
+            helm_globals.midi.forward_messages()
+
             self.clock.tick(60)  # 60 fps
 
         # If we've reached this point, we've escaped the run: loop.  Quit.
         pygame.quit()
+        if helm_globals.using_midi:
+            helm_globals.midi.inport.close()
+            helm_globals.midi.outport.close()
+        if helm_globals.using_midi_clock:
+            helm_globals.midi.inport_clock.close()
 
 
 if __name__ == "__main__":
