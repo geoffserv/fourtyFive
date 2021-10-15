@@ -36,7 +36,6 @@ class Midi(object):
     def forward_messages(self):
         # Hacky POC at routing messages received at inport_clock interface
         for msg in self.inport_clock:
-            print("FORWARD_MESSAGES: ", msg)
             self.outport.send(msg)
 
     def latch(self):
