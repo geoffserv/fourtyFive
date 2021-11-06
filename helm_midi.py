@@ -33,6 +33,11 @@ class Midi(object):
         # a new chord
         self.notes_latched = []
 
+    def forward_messages(self):
+        # Hacky POC at routing messages received at inport_clock interface
+        for msg in self.inport_clock:
+            self.outport.send(msg)
+
     def latch(self):
         if helm_globals.notes_latched:
             for note in helm_globals.key.notes_on:

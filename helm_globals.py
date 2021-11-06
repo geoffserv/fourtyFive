@@ -9,6 +9,7 @@ using_griffin_powermate = False
 
 # midi support
 using_midi = False
+using_midi_clock = False
 midi = None
 
 # If I try to render things like text, corners of polygons, etc right up

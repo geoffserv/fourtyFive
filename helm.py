@@ -31,29 +31,15 @@ class Helm:
         if config.read(configfile):
             try:
                 helm_globals.using_griffin_powermate = \
-                    config['helm']['powermate']
-                # Convert from string
-                if helm_globals.using_griffin_powermate == "True":
-                    helm_globals.using_griffin_powermate = True
-                else:
-                    helm_globals.using_griffin_powermate = False
+                    config['helm'].getboolean('powermate')
+
                 helm_globals.using_midi = \
-                    config['helm']['midi']
-                if helm_globals.using_midi == "True":
-                    helm_globals.using_midi = True
-                else:
-                    helm_globals.using_midi = False
-                self.fullscreen = config['helm']['fullscreen']
-                if self.fullscreen == "True":
-                    self.fullscreen = True
-                else:
-                    self.fullscreen = False
-                self.helm_globals.using_midi_clock = \
-                    config['helm']['midi_clock']
-                if self.using_midi_clock == "True":
-                    self.using_midi_clock = True
-                else:
-                    self.using_midi_clock = False
+                    config['helm'].getboolean('midi')
+
+                self.fullscreen = config['helm'].getboolean('fullscreen')
+
+                helm_globals.using_midi_clock = \
+                    config['helm'].getboolean('midi_clock')
 
             except configparser.Error:
                 print("Config file error.  Maintaining defaults")
@@ -310,9 +296,19 @@ class Helm:
                 controlSurface.update_control(
                     events)  # update control attributes with a dict of events
 
+            # ... and, forward along any MIDI messages received at the
+            # secondary MIDI interface, if found and enabled
+            if helm_globals.using_midi_clock:
+                helm_globals.midi.forward_messages()
+
             self.clock.tick(60)  # 60 fps
 
         # If we've reached this point, we've escaped the run: loop.  Quit.
+        if helm_globals.using_midi:
+            helm_globals.midi.inport.close()
+            helm_globals.midi.outport.close()
+        if helm_globals.using_midi_clock:
+            helm_globals.midi.inport_clock.close()
         pygame.quit()
 
 
